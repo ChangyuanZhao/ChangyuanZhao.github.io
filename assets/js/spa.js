@@ -1,6 +1,6 @@
 /**
- * acad-homepage SPA 实现
- * 极简版本 - 确保移动端和子页面刷新兼容性
+ * acad-homepage SPA 实现 - 修复版本
+ * 解决移动端空白、背景渲染和布局一致性问题
  */
 document.addEventListener("DOMContentLoaded", function () {
   // 定义关键变量
@@ -8,14 +8,109 @@ document.addEventListener("DOMContentLoaded", function () {
   const currentPath = window.location.pathname;
   const mainContent = document.querySelector(".page__content");
   
+  // 修复问题1：移动端菜单栏与正文之间的空白
+  function fixMobileLayout() {
+    if (isMobile) {
+      // 获取菜单和内容区域
+      const sidebarMenu = document.querySelector(".sidebar");
+      const contentArea = document.querySelector(".page__content");
+      
+      if (sidebarMenu && contentArea) {
+        // 调整移动端菜单和内容区域的间距
+        sidebarMenu.style.marginBottom = "0";
+        contentArea.style.marginTop = "1rem";
+        
+        // 修复可能的父容器内边距问题
+        const containers = document.querySelectorAll(".container, .archive");
+        containers.forEach(container => {
+          container.style.padding = "0 1rem";
+        });
+      }
+    }
+  }
+  
+  // 修复问题2：移动端刷新子页面背景渲染问题
+  function fixBackgroundRendering() {
+    // 确保背景样式在页面加载时应用
+    const body = document.body;
+    const htmlElement = document.documentElement;
+    
+    // 强制应用背景样式
+    if (body && !body.style.background) {
+      // 检查是否有定义的背景色/图像，如果没有设置默认值
+      const computedStyle = window.getComputedStyle(body);
+      if (!computedStyle.background || computedStyle.background === "none") {
+        body.style.backgroundColor = "#f3f6f6"; // 默认背景色，根据你的设计修改
+      }
+    }
+    
+    // 确保HTML元素也有正确的背景
+    if (htmlElement) {
+      htmlElement.style.minHeight = "100%";
+    }
+    
+    // 特别处理子页面
+    if (currentPath !== "/" && !currentPath.endsWith("index.html")) {
+      // 确保子页面的容器有足够的高度
+      const pageWrapper = document.querySelector(".page-wrapper, .archive, main");
+      if (pageWrapper) {
+        pageWrapper.style.minHeight = "100vh";
+      }
+    }
+  }
+  
+  // 修复问题3：布局一致性问题
+  function fixLayoutConsistency() {
+    // 获取所有可能有不同布局的容器
+    const layoutContainers = document.querySelectorAll(".page, .archive, .page__inner-wrap");
+    
+    layoutContainers.forEach(container => {
+      // 确保内边距和外边距一致
+      container.style.boxSizing = "border-box";
+      
+      // 获取主页的布局样式，应用到所有页面
+      const mainPageContainer = document.querySelector(".home .page, .home .archive");
+      if (mainPageContainer) {
+        // 复制主页布局的关键样式
+        const mainStyle = window.getComputedStyle(mainPageContainer);
+        container.style.padding = mainStyle.padding;
+        container.style.margin = mainStyle.margin;
+        container.style.maxWidth = mainStyle.maxWidth;
+        container.style.width = mainStyle.width;
+      } else {
+        // 默认值，如果无法获取主页样式
+        container.style.padding = "1em";
+        container.style.margin = "0 auto";
+        container.style.maxWidth = "100%";
+      }
+    });
+    
+    // 特别处理移动设备的布局
+    if (isMobile) {
+      document.querySelectorAll(".page__inner-wrap, .page__content").forEach(el => {
+        el.style.padding = "0.5em";
+      });
+    }
+  }
+  
   // 检查是否为子页面直接访问
   if (currentPath !== "/" && !currentPath.endsWith("index.html")) {
     // 判断是否为刷新子页面
-    let isRefreshing = true;
+    const isRefreshing = true;
     
     if (isRefreshing) {
-      // 如果是直接访问子页面且需要完整模板，直接使用传统方式导航
-      console.log("子页面直接访问，使用传统导航");
+      // 修复：即使在传统导航模式下，也应用布局修复
+      fixMobileLayout();
+      fixBackgroundRendering();
+      fixLayoutConsistency();
+      
+      // 修复问题2：确保背景样式在子页面刷新时也应用
+      window.addEventListener("load", function() {
+        setTimeout(fixBackgroundRendering, 100);
+      });
+      
+      // 如果是直接访问子页面，使用传统导航，但应用布局修复
+      console.log("子页面直接访问，使用传统导航并应用布局修复");
       return; // 不启用SPA，使用传统导航
     }
   }
@@ -29,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // 链接处理标记
   const HANDLED_ATTR = "data-spa-link";
   
-  // 简单获取页面并替换内容
+  // 简单获取页面并替换内容，增加布局一致性处理
   function loadPage(url) {
     // 简单的加载指示
     const loadingDiv = document.createElement("div");
@@ -59,15 +154,44 @@ document.addEventListener("DOMContentLoaded", function () {
         const newContent = doc.querySelector(".page__content");
         
         if (newContent) {
-          // 简单更新内容和标题
+          // 记录原始页面的滚动位置和主要CSS类
+          const originalBodyClasses = document.body.className;
+          const originalHtmlClasses = document.documentElement.className;
+          
+          // 更新标题和内容
           document.title = doc.title;
           mainContent.innerHTML = newContent.innerHTML;
+          
+          // 保留并合并body类和HTML类以保持样式一致性
+          if (doc.body.className) {
+            // 合并类，保留原有的重要类
+            const originalClasses = originalBodyClasses.split(' ');
+            const newClasses = doc.body.className.split(' ');
+            
+            // 保留布局相关的类
+            const layoutClasses = originalClasses.filter(cls => 
+              cls.includes('layout') || cls.includes('wide') || cls.includes('sidebar')
+            );
+            
+            // 从新页面获取特定页面类型
+            const pageTypeClasses = newClasses.filter(cls => 
+              !cls.includes('layout') && !cls.includes('wide') && !cls.includes('sidebar')
+            );
+            
+            // 合并并设置
+            document.body.className = [...layoutClasses, ...pageTypeClasses].join(' ');
+          }
           
           // 更新URL
           history.pushState(null, document.title, url);
           
           // 初始化内容
           initContent();
+          
+          // 应用所有布局修复
+          fixMobileLayout();
+          fixBackgroundRendering();
+          fixLayoutConsistency();
           
           // 绑定链接
           bindLinks();
@@ -142,11 +266,35 @@ document.addEventListener("DOMContentLoaded", function () {
     loadPage(window.location.pathname);
   });
   
+  // 修复: 应用所有布局修复
+  fixMobileLayout();
+  fixBackgroundRendering();
+  fixLayoutConsistency();
+  
+  // 修复: 监听窗口大小变化，重新应用修复
+  window.addEventListener('resize', function() {
+    // 更新移动状态
+    const wasIsMobile = isMobile;
+    const currentIsMobile = window.innerWidth < 768;
+    
+    // 仅当移动状态变化时重新应用修复
+    if (wasIsMobile !== currentIsMobile) {
+      fixMobileLayout();
+      fixLayoutConsistency();
+      
+      // 如果包含地图，更新地图大小
+      if (window.travelMap) {
+        setTimeout(() => window.travelMap.invalidateSize(), 100);
+      }
+    }
+  });
+  
   // 初始绑定链接
   bindLinks();
   
-  // 简单地引用旅行地图函数 (保持原有功能不变)
+  // 保留原有的旅行地图函数
   window.initTravelMap = window.initTravelMap || function() {
+    // 原有代码保持不变
     console.log("初始化旅行地图");
     
     // 检查地图容器是否存在
