@@ -3,9 +3,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 页面内容加载函数
   function loadPage(fullUrl, updateHistory = true) {
-    const [url, hash] = fullUrl.split("#"); // 分离锚点
+    const [urlPart, hash] = fullUrl.split("#");
   
-    fetch(url || "/")
+    // 🧠 特殊处理 homepage 上的锚点（如 /#about-me）
+    const cleanUrl = (urlPart === "" || urlPart === "/") ? "/" : urlPart;
+  
+    fetch(cleanUrl)
       .then(response => {
         if (!response.ok) throw new Error("Page not found");
         return response.text();
@@ -18,21 +21,20 @@ document.addEventListener("DOMContentLoaded", function () {
         if (newContent && mainContent) {
           mainContent.innerHTML = newContent.innerHTML;
           document.title = doc.title;
+  
           if (updateHistory) {
             history.pushState(null, "", fullUrl);
           }
   
-          // ✨ 页面加载完后，跳转锚点
+          // 💡 添加延迟滚动到锚点
           if (hash) {
             setTimeout(() => {
               const target = document.getElementById(hash);
               if (target) {
                 target.scrollIntoView({ behavior: "smooth" });
               }
-            }, 50); // 加一点延迟，确保 DOM 已插入
+            }, 50);
           }
-        } else {
-          throw new Error("main-content not found in fetched page");
         }
       })
       .catch(err => {
@@ -40,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
         mainContent.innerHTML = "<p><strong>Page failed to load.</strong></p>";
       });
   }
+
 
 
   document.querySelectorAll("a.nav-link").forEach(link => {
