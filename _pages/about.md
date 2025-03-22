@@ -41,7 +41,11 @@ For more information, please visit our research group at NTU.
 - *2022.02*: &nbsp;🎉🎉 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet ipsum, ac tempus justo dapibus sit amet. 
 - *2022.02*: &nbsp;🎉🎉 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet ipsum, ac tempus justo dapibus sit amet. 
 
+
+
 # 🌍 Travel Map
+
+<div id="travel-map" style="height: 400px; border-radius: 8px; margin: 20px 0;"></div>
 
 <div id="map" style="height: 600px; border-radius: 12px;"></div>
 
