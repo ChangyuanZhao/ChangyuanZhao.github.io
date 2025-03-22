@@ -1,19 +1,99 @@
 <meta charset="utf-8">
-
 {% include seo.html %}
-
 <meta name="HandheldFriendly" content="True">
 <meta name="MobileOptimized" content="320">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<base target="_blank">
 <script>
   document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 </script>
-
 <!-- For all browsers -->
 <link rel="stylesheet" href="assets/css/main.css">
 
+<!-- 修复SPA移动端问题的CSS -->
+<style>
+/* 修复菜单栏与正文间的大空白 */
+@media (max-width: 767px) {
+  /* 调整菜单与内容间距 */
+  .sidebar {
+    margin-bottom: 0 !important;
+  }
+  
+  .page__content {
+    margin-top: 1rem !important;
+  }
+  
+  /* 缩小内容区域的内边距 */
+  .page__inner-wrap {
+    padding: 0.5em !important;
+  }
+  
+  /* 调整布局容器尺寸 */
+  .container, .archive, .page {
+    padding: 0 1rem !important;
+  }
+  
+  /* 确保标题没有过大的边距 */
+  .page__title, .archive__title {
+    margin-top: 0.5em !important;
+    margin-bottom: 0.5em !important;
+  }
+  
+  /* 移除可能导致空白的多余边距 */
+  .masthead, .masthead__inner-wrap {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* 修复移动端刷新背景问题 */
+html {
+  min-height: 100%;
+  background-color: #f3f6f6; /* 可修改为你的默认背景色 */
+}
+
+body {
+  min-height: 100vh;
+  background-color: #f3f6f6; /* 可修改为你的默认背景色 */
+}
+
+/* 确保内容区域足够高 */
+.page-wrapper, .archive, main {
+  min-height: 100vh;
+}
+
+/* 修复布局一致性问题 */
+/* 确保所有页面布局一致 */
+.page, .archive, .page__inner-wrap {
+  box-sizing: border-box;
+}
+
+/* 强制主内容区域具有一致的宽度和边距 */
+.page__content,
+.archive__content {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* 确保子页面内容与主页一致 */
+.page__content > *,
+.archive__content > * {
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* 修复可能的内容溢出问题 */
+img, iframe, video, table {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 确保地图容器正确显示 */
+#travel-map {
+  width: 100% !important;
+  min-height: 400px;
+  z-index: 1;
+}
+</style>
+
 <meta http-equiv="cleartype" content="on">
-<head>
-  <base target="_blank">
-</head>
