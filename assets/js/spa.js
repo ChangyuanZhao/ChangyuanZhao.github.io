@@ -18,10 +18,25 @@ document.addEventListener("DOMContentLoaded", function () {
   if (currentPath !== "/" && !currentPath.endsWith("index.html")) {
     console.log("子页面直接访问，使用传统导航");
     
-    // 处理样式一致性问题 - 确保子页面样式和主页一致
-    // 此处不启用SPA，让子页面使用原生加载方式，但我们可以确保样式一致性
+    // === 关键修改：子页面刷新时确保完整布局 ===
+    // 检查是否缺少主要布局元素
+    const mainContainer = document.querySelector(".layout--single");
+    const masthead = document.querySelector(".masthead");
+    const sidebar = document.querySelector(".sidebar");
     
-    // 确保页面样式一致性的函数
+    if (!mainContainer || !masthead || !sidebar) {
+      console.log("子页面刷新时缺少布局，重定向到首页并带上目标路径");
+      
+      // 保存当前路径，并重定向到首页
+      const targetPath = window.location.pathname;
+      sessionStorage.setItem('redirectTarget', targetPath);
+      
+      // 跳转到首页
+      window.location.href = "/";
+      return;
+    }
+    
+    // 处理样式一致性问题 - 确保子页面样式和主页一致
     function ensureConsistentStyle() {
       // 添加CSS样式确保页面背景为白色
       const styleElement = document.createElement('style');
@@ -47,8 +62,25 @@ document.addEventListener("DOMContentLoaded", function () {
       initContent();
     }
     
-    // 子页面使用传统导航，不启用SPA
+    // 初始绑定链接
+    bindLinks();
+    
+    // 子页面使用传统导航，不启用SPA加载
     return;
+  }
+  
+  // === 新增：首页加载时检查是否有重定向目标 ===
+  if (currentPath === "/" || currentPath.endsWith("index.html")) {
+    const redirectTarget = sessionStorage.getItem('redirectTarget');
+    if (redirectTarget) {
+      console.log("检测到重定向目标:", redirectTarget);
+      // 清除存储的目标
+      sessionStorage.removeItem('redirectTarget');
+      // 等待首页完全加载后再跳转
+      setTimeout(() => {
+        loadPage(redirectTarget);
+      }, 300);
+    }
   }
   
   // 没有主内容区域则退出
@@ -90,8 +122,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const newContent = doc.querySelector(".page__content");
         
         if (newContent) {
-          // 简单更新内容和标题
+          // 更新标题
           document.title = doc.title;
+          
+          // === 关键修改：保留布局，只更新主内容 === 
           mainContent.innerHTML = newContent.innerHTML;
           
           // 更新URL
@@ -100,7 +134,7 @@ document.addEventListener("DOMContentLoaded", function () {
           // 初始化内容
           initContent();
           
-          // 绑定链接
+          // 重新绑定链接
           bindLinks();
           
           // 回到顶部
@@ -150,6 +184,19 @@ document.addEventListener("DOMContentLoaded", function () {
     if (mainContent) {
       mainContent.style.backgroundColor = "#ffffff";
     }
+    
+    // === 关键修改：检查和修复边栏激活状态 ===
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.sidebar .nav__items a').forEach(link => {
+      const href = link.getAttribute('href');
+      // 清除所有激活状态
+      link.parentElement.classList.remove('active');
+      
+      // 为当前页面设置激活状态
+      if (href && currentPath.includes(href) && href !== '/') {
+        link.parentElement.classList.add('active');
+      }
+    });
   }
   
   // 绑定所有内部链接
