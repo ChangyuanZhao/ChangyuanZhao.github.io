@@ -37,16 +37,12 @@ author_profile: true
       {{ pub.title }}
     </div>
 
-    <div style="margin-top: 0.3em;">
-      {% assign display_limit = 7 %}
-      {% assign total = pub.authors | size %}
-      {% for author in pub.authors limit: display_limit %}
-        {{ author }}{% if forloop.last == false %}, {% endif %}
-      {% endfor %}
-      {% if total > display_limit %}
-        and <span style="color: gray;">{{ total | minus: display_limit }} more</span>
-      {% endif %}
-    </div>
+    <div style="margin-top: 0.4em; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+  <a href="{{ pub.url }}" target="_blank" style="text-decoration: none; color: inherit;">
+    {{ pub.title }}
+  </a>
+</div>
+
 
     <div style="margin-top: 0.2em; font-style: italic; color: #444;">
       <em>{{ pub.venue }}</em>, {{ pub.year }}
