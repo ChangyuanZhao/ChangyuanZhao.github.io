@@ -1,0 +1,15 @@
+- city: Philadelphia
+  country: USA
+  lat: 39.9526
+  lon: -75.1652
+  count: 1
+- city: Beijing
+  country: China
+  lat: 39.9042
+  lon: 116.4074
+  count: 5
+- city: Singapore
+  country: Singapore
+  lat: 1.3521
+  lon: 103.8198
+  count: 3
