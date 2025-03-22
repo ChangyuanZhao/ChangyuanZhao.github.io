@@ -242,26 +242,145 @@ document.addEventListener("DOMContentLoaded", function () {
       oldScript.parentNode.replaceChild(newScript, oldScript);
     });
     
-    // === 修复：更强大的地图初始化处理 ===
-    if (typeof window.initTravelMap === 'function') {
-      console.log("检测到地图初始化函数，准备加载地图...");
-      // 使用更长的延迟以确保DOM完全加载
-      setTimeout(() => {
+    // === 修复：彻底的地图初始化处理 ===
+    // 检查当前页面URL是否包含地图页面的标识
+    const isMapPage = window.location.pathname.includes('/travel') || 
+                      window.location.pathname.includes('/map') ||
+                      document.getElementById('travel-map') || 
+                      document.querySelector('.travel-map-container');
+    
+    if (isMapPage) {
+      console.log("检测到地图页面，准备多次尝试初始化地图...");
+      
+      // 强制重新加载地图相关资源
+      function reloadMapResources() {
+        // 查找并重载地图相关的脚本
+        document.querySelectorAll('script').forEach(script => {
+          const src = script.getAttribute('src') || '';
+          if (src.includes('map') || src.includes('leaflet') || src.includes('travel')) {
+            console.log("重新加载地图相关脚本:", src);
+            const newScript = document.createElement('script');
+            Array.from(script.attributes).forEach(attr => {
+              if (attr.name !== 'src') { // 除了src之外的属性直接复制
+                newScript.setAttribute(attr.name, attr.value);
+              }
+            });
+            // 添加时间戳防止缓存
+            newScript.src = src.includes('?') ? 
+              `${src}&_t=${new Date().getTime()}` : 
+              `${src}?_t=${new Date().getTime()}`;
+            
+            // 替换旧脚本
+            if (script.parentNode) {
+              script.parentNode.replaceChild(newScript, script);
+            }
+          }
+        });
+      }
+      
+      // 执行地图初始化的函数
+      function executeMapInit() {
         try {
-          // 检查地图容器是否存在
-          const mapContainer = document.getElementById('travel-map') || document.querySelector('.travel-map-container');
-          if (mapContainer) {
-            console.log("找到地图容器，初始化地图");
+          if (typeof window.initTravelMap === 'function') {
+            console.log("尝试初始化地图...");
+            
+            // 检查地图容器
+            const mapContainer = document.getElementById('travel-map') || document.querySelector('.travel-map-container');
+            if (!mapContainer) {
+              console.warn("未找到地图容器，无法初始化地图");
+              return false;
+            }
+            
+            // 重置地图容器内容，确保清除旧状态
+            if (mapContainer._leaflet) {
+              console.log("检测到Leaflet地图实例，移除旧实例");
+              mapContainer._leaflet.remove();
+            }
+            
+            // 强制重置容器样式和内容
+            const originalHTML = mapContainer.innerHTML;
+            const originalStyle = mapContainer.getAttribute('style') || '';
+            
+            // 设置最小高度以确保可见
+            mapContainer.style.minHeight = '400px';
+            mapContainer.style.display = 'block';
+            
+            // 执行初始化
             window.initTravelMap();
+            
+            // 检查初始化后的状态
+            setTimeout(() => {
+              // 如果地图仍然为空，尝试恢复原始内容并重新初始化
+              if (!mapContainer._leaflet && !mapContainer.querySelector('.leaflet-container')) {
+                console.warn("地图初始化似乎失败，尝试恢复和重新初始化");
+                mapContainer.innerHTML = originalHTML;
+                mapContainer.setAttribute('style', originalStyle);
+                window.initTravelMap();
+              }
+            }, 300);
+            
+            return true;
           } else {
-            console.log("未找到地图容器，跳过地图初始化");
+            console.warn("未找到initTravelMap函数");
+            return false;
           }
         } catch (e) {
-          console.error("地图初始化错误:", e);
+          console.error("地图初始化出错:", e);
+          return false;
         }
-      }, 800); // 增加延迟时间
+      }
+      
+      // 多次尝试初始化地图，以不同的延迟
+      const initAttempts = [500, 1000, 2000, 3500];
+      let successfulInit = false;
+      
+      // 首先尝试重新加载地图资源
+      setTimeout(reloadMapResources, 200);
+      
+      // 然后在不同时间点尝试初始化
+      initAttempts.forEach((delay, index) => {
+        setTimeout(() => {
+          if (!successfulInit) {
+            console.log(`第${index + 1}次尝试初始化地图，延迟: ${delay}ms`);
+            successfulInit = executeMapInit();
+            
+            // 最后一次尝试如果仍然失败，考虑更极端的方法
+            if (!successfulInit && index === initAttempts.length - 1) {
+              console.warn("多次尝试后地图仍未初始化，尝试最后的恢复方法");
+              
+              // 尝试检测地图库是否存在
+              if (window.L && typeof window.L.map === 'function') {
+                console.log("检测到Leaflet库存在，尝试手动创建地图");
+                
+                const mapContainer = document.getElementById('travel-map') || document.querySelector('.travel-map-container');
+                if (mapContainer) {
+                  // 重置容器
+                  mapContainer.innerHTML = '';
+                  
+                  // 尝试创建基本地图
+                  try {
+                    const basicMap = window.L.map(mapContainer.id || 'travel-map').setView([20, 0], 2);
+                    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                      attribution: '© OpenStreetMap contributors'
+                    }).addTo(basicMap);
+                    console.log("成功创建基本地图");
+                    
+                    // 触发自定义事件通知地图已创建
+                    const mapCreatedEvent = new CustomEvent('spa:mapCreated', {
+                      detail: { map: basicMap }
+                    });
+                    document.dispatchEvent(mapCreatedEvent);
+                  } catch (e) {
+                    console.error("手动创建地图失败:", e);
+                  }
+                }
+              }
+            }
+          }
+        }, delay);
+      });
     } else {
-      console.log("未检测到地图初始化函数");
+      console.log("当前不是地图页面，跳过地图初始化");
     }
     
     // === 新增：触发自定义事件，通知页面内容已更新 ===
@@ -324,11 +443,70 @@ document.addEventListener("DOMContentLoaded", function () {
   // 初始绑定链接
   bindLinks();
   
-  // === 新增：监听地图初始化需求 ===
+  // === 新增：更强大的地图初始化监听 ===
   document.addEventListener('spa:needMapInit', function() {
     if (typeof window.initTravelMap === 'function') {
       console.log("收到地图初始化请求");
-      setTimeout(window.initTravelMap, 300);
+      
+      const mapContainer = document.getElementById('travel-map') || document.querySelector('.travel-map-container');
+      if (mapContainer) {
+        // 清除可能存在的旧地图实例
+        if (mapContainer._leaflet) {
+          try {
+            mapContainer._leaflet.remove();
+          } catch (e) {
+            console.error("移除旧地图实例失败:", e);
+          }
+        }
+        
+        // 尝试多次初始化
+        [100, 500, 1000].forEach(delay => {
+          setTimeout(() => {
+            try {
+              window.initTravelMap();
+            } catch (e) {
+              console.error(`延迟${delay}ms初始化地图失败:`, e);
+            }
+          }, delay);
+        });
+      } else {
+        console.warn("找不到地图容器，无法响应初始化请求");
+      }
     }
   });
+  
+  // === 新增：MutationObserver监控DOM变化，自动检测地图容器 ===
+  const mapObserver = new MutationObserver((mutations) => {
+    // 检查是否有地图容器被添加到DOM中
+    for (const mutation of mutations) {
+      if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+        const hasMapContainer = Array.from(mutation.addedNodes).some(node => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            // 检查节点本身
+            if (node.id === 'travel-map' || node.classList.contains('travel-map-container')) {
+              return true;
+            }
+            // 检查子节点
+            if (node.querySelector && (
+              node.querySelector('#travel-map') || 
+              node.querySelector('.travel-map-container')
+            )) {
+              return true;
+            }
+          }
+          return false;
+        });
+        
+        if (hasMapContainer) {
+          console.log("检测到地图容器被添加到DOM，尝试初始化地图");
+          document.dispatchEvent(new CustomEvent('spa:needMapInit'));
+          break;
+        }
+      }
+    }
+  });
+  
+  // 开始观察整个文档的变化
+  mapObserver.observe(document.body, { childList: true, subtree: true });
+});
 });
