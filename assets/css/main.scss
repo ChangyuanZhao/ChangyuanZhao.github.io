@@ -107,3 +107,26 @@ h1:before, .anchor:before {
     background-color: #00369f;
     font-size: .8em;
 }
+
+// 全站基础字体大小调整
+body {
+  font-size: 18px;   // 原主题默认是 16px
+  line-height: 1.8;
+}
+
+// 放大标题
+h1 {
+  font-size: 2.2em;
+}
+
+h2 {
+  font-size: 1.8em;
+}
+
+h3 {
+  font-size: 1.5em;
+}
+
+.sidebar, .masthead, .footer {
+  font-size: 1em;
+}
