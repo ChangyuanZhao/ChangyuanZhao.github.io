@@ -130,8 +130,8 @@ For more information, please visit our research group at NTU.
       
       const popupContent = `
         <strong>${entry.city}</strong><br/>
-        🧭 出行次数：${totalVisits}<br/>
-        🕒 最近 ${recentVisits.length} 次：<br/>
+        🧭 Total trips: ${totalVisits}<br/>
+        🕒 Most recent ${recentVisits.length} trips:<br/>
         <ul style="padding-left: 16px; margin: 5px 0;">
           ${recentVisits.map(date => `<li>${date}</li>`).join("")}
         </ul>
