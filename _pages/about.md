@@ -86,13 +86,21 @@ For more information, please visit our research group at NTU.
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
-  window.onload = function() {
-    console.log("开始初始化地图...");
-    console.log("地图容器:", document.getElementById('travel-map'));
+  // 初始化函数
+  function initMap() {
+    console.log("初始化地图...");
+    
+    // 检查地图容器是否存在
+    const mapContainer = document.getElementById('travel-map');
+    if (!mapContainer) {
+      console.error("找不到地图容器");
+      return;
+    }
     
     // 防止多次初始化
     if (window.travelMap) {
-      console.log("地图已初始化，跳过");
+      // 如果地图已经存在，只需刷新布局
+      window.travelMap.invalidateSize();
       return;
     }
     
@@ -117,7 +125,7 @@ For more information, please visit our research group at NTU.
     }
     
     // 使用 Jekyll 从 YAML 文件中获取旅行数据
-    const travelData = {{ site.data.travel.cities | jsonify }};
+    const travelData = {{ site.data.travel.cities | jsonify }} || [];
     
     // 处理旅行数据并添加标记
     travelData.forEach(entry => {
@@ -134,12 +142,9 @@ For more information, please visit our research group at NTU.
       `;
       
       // 根据访问次数调整圆点大小，设置最大值
-      // 使用较小的基础大小，较小的增长比例，并限制最大大小
-      const baseSize = 3;  // 基础大小
-      const growthFactor = 0.7;  // 每次访问增加的大小
-      const maxVisitsForSize = 8;  // 最大考虑的访问次数
-      
-      // 计算实际半径，限制最大访问计数为maxVisitsForSize
+      const baseSize = 3;
+      const growthFactor = 0.7;
+      const maxVisitsForSize = 8;
       const effectiveVisits = Math.min(totalVisits, maxVisitsForSize);
       const radius = baseSize + effectiveVisits * growthFactor;
       
@@ -165,10 +170,19 @@ For more information, please visit our research group at NTU.
     setTimeout(function() {
       map.invalidateSize();
     }, 100);
-  };
-</script>
-    setTimeout(function() {
-      map.invalidateSize();
-    }, 100);
-  };
+  }
+
+  // 页面加载时初始化地图
+  window.onload = initMap;
+  
+  // 当URL的哈希部分变化时（例如点击锚点链接时）重新初始化地图
+  window.addEventListener('hashchange', function() {
+    // 给地图一点时间来重新布局
+    setTimeout(initMap, 300);
+  });
+  
+  // 对于使用pushState的情况
+  window.addEventListener('popstate', function() {
+    setTimeout(initMap, 300);
+  });
 </script>
