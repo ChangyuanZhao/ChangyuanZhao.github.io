@@ -46,9 +46,7 @@ For more information, please visit our research group at NTU.
 # 🌍 Travel Map
 
 <div id="travel-map" style="height: 400px; width: 100%; border-radius: 8px; margin: 20px 0; position: relative; z-index: 1;"></div>
-
 <p class="map-stats">Since 2025 Dec., I have visited <span id="total-cities">0</span> cities with a total of <span id="total-visits">0</span> travel experiences.</p>
-
 <style>
   #travel-map {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -84,11 +82,9 @@ For more information, please visit our research group at NTU.
     color: #d62728;
   }
 </style>
-
 <!-- Leaflet 地图库 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-
 <script>
   window.onload = function() {
     console.log("开始初始化地图...");
@@ -137,8 +133,15 @@ For more information, please visit our research group at NTU.
         </ul>
       `;
       
-      // 根据访问次数调整圆点大小
-      const radius = 5 + totalVisits * 2;
+      // 根据访问次数调整圆点大小，设置最大值
+      // 使用较小的基础大小，较小的增长比例，并限制最大大小
+      const baseSize = 3;  // 基础大小
+      const growthFactor = 0.7;  // 每次访问增加的大小
+      const maxVisitsForSize = 8;  // 最大考虑的访问次数
+      
+      // 计算实际半径，限制最大访问计数为maxVisitsForSize
+      const effectiveVisits = Math.min(totalVisits, maxVisitsForSize);
+      const radius = baseSize + effectiveVisits * growthFactor;
       
       L.circleMarker([entry.lat, entry.lon], {
         radius: radius,
@@ -159,6 +162,11 @@ For more information, please visit our research group at NTU.
     document.getElementById('total-visits').textContent = totalVisits;
     
     // 强制刷新地图布局
+    setTimeout(function() {
+      map.invalidateSize();
+    }, 100);
+  };
+</script>
     setTimeout(function() {
       map.invalidateSize();
     }, 100);
