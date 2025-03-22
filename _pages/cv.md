@@ -1,6 +1,9 @@
 ---
 title: "Changyuan's CV"
 permalink: /cv/
+layout: page  
+excerpt: ""
+author_profile: true
 ---
 
 # 🎖 Honors and Awards
