@@ -135,9 +135,16 @@ document.addEventListener("DOMContentLoaded", function () {
       window.loadCitation();
     }
     
-    // 如果有使用MathJax
+    // 如果有使用MathJax，根据不同版本调用不同方法
     if (window.MathJax) {
-      window.MathJax.typeset();
+      // MathJax v3.x
+      if (typeof window.MathJax.typeset === 'function') {
+        window.MathJax.typeset();
+      }
+      // MathJax v2.x
+      else if (window.MathJax.Hub && typeof window.MathJax.Hub.Queue === 'function') {
+        window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
+      }
     }
   }
   
