@@ -1,18 +1,16 @@
-
-<div class="paper-box" style="margin-bottom: 1.2em; width: 100%; max-width: 1600px; margin-left: auto; margin-right: auto;">
+<div class="paper-box" style="margin-bottom: 1.2em; width: 100%; max-width: 90vw; margin-left: auto; margin-right: auto;">
   <div class="paper-box-text" style="font-size: 0.95em; line-height: 1.5; width: 100%;">
-    <!-- Badge -->
-    <div style="display: flex; align-items: center; justify-content: space-between;">
-      <span style="background-color: #00369f; color: white; padding: 0.2em 0.5em; border-radius: 4px; font-weight: 600; font-size: 0.75em;">
+    
+    <!-- Title + Badge -->
+    <div style="margin-top: 0.4em; font-weight: 600; display: flex; align-items: center; gap: 0.5em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      <span style="background-color: #00369f; color: white; width: 4em; text-align: center; padding: 0.2em 0.3em; border-radius: 4px; font-weight: 600; font-size: 0.75em; flex-shrink: 0;">
         {{ include.pub.short }}
       </span>
-    </div>
-    <!-- Title with link -->
-    <div style="margin-top: 0.4em; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
       <a href="{{ include.pub.url }}" target="_blank" style="text-decoration: none; color: inherit;">
         {{ include.pub.title }}
       </a>
     </div>
+
     <!-- Authors -->
     <div style="margin-top: 0.3em;">
       {% assign display_limit = 7 %}
@@ -24,6 +22,7 @@
         and <span style="color: gray;">{{ total | minus: display_limit }} more</span>
       {% endif %}
     </div>
+
     <!-- Venue + Year + Code -->
     <div style="margin-top: 0.2em; font-style: italic; color: #444;">
       <em>{{ include.pub.venue }}</em>, {{ include.pub.year }}
