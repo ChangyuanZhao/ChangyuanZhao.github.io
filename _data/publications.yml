@@ -1,0 +1,23 @@
+- title: "Cross-Modal Generative Semantic Communications for Mobile AIGC: Joint Semantic Encoding and Prompt Engineering"
+  year: 2024
+  venue: "IEEE Transactions on Mobile Computing"
+  short: "TMC"
+  authors:
+    - Yinqiu Liu
+    - Hongyang Du
+    - Dusit Niyato
+    - Changyuan Zhao
+    - Xiang Li
+    - Yuchen Zhang
+    - Yifan Chen
+    - Another Author
+    - Extra Author
+
+- title: "Another Paper Title"
+  year: 2023
+  venue: "IEEE Journal on Selected Areas in Communications"
+  short: "JSAC"
+  authors:
+    - First Author
+    - Second Author
+    - Third Author
