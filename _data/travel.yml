@@ -12,19 +12,51 @@ cities:
     visits:
       - 2025-03-02
 
-  - city: 东京
-    lat: 35.6762
-    lon: 139.6503
+  - city: Suwon
+    lat: 37.2636
+    lon: 127.0286
     visits:
-      - 2023-08-12
-      - 2022-11-30
-      - 2022-03-15
-      - 2021-07-20
+      - 2025-03-04
       
-  - city: 新加坡
+  - city: Seoul
+    lat: 37.5665
+    lon: 126.9780
+    visits:
+      - 2025-03-09
+
+  - city: Singapore
     lat: 1.3521
     lon: 103.8198
     visits:
-      - 2024-02-10
-      - 2023-11-20
-      - 2023-06-15
+      - 2025-03-14
+      - 2025-01-10
+      - 2024-12-20
+
+  - city: Johor Bahru
+    lat: 1.4927
+    lon: 103.7414
+    visits:
+      - 2025-01-29
+
+  - city: Hong Kong
+    lat: 22.3193
+    lon: 114.1694
+    visits:
+      - 2024-12-16
+      
+   - city: Bangkok
+    lat: 13.7563
+    lon: 100.5018
+    visits:
+      - 2024-12-26
+    
+  - city: Xi'an
+    lat: 34.3416
+    lon: 108.9398
+      visits:
+        - 2024-12-29
+
+
+
+
+
