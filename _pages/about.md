@@ -41,6 +41,41 @@ For more information, please visit our research group at NTU.
 - *2022.02*: &nbsp;🎉🎉 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet ipsum, ac tempus justo dapibus sit amet. 
 - *2022.02*: &nbsp;🎉🎉 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet ipsum, ac tempus justo dapibus sit amet. 
 
+# 🌍 Travel Map
+
+<div id="map" style="height: 600px;"></div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<script>
+  const map = L.map('map').setView([20, 0], 2);  // 初始视角
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 8,
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  const travelData = [
+    { city: "Philadelphia", lat: 39.9526, lon: -75.1652, count: 1 },
+    { city: "Beijing", lat: 39.9042, lon: 116.4074, count: 5 },
+    { city: "Singapore", lat: 1.3521, lon: 103.8198, count: 3 }
+  ];
+
+  travelData.forEach(({ city, lat, lon, count }) => {
+    const radius = 5 + count * 3;  // 基础半径 + 次数缩放
+    L.circleMarker([lat, lon], {
+      radius: radius,
+      fillColor: "#d62728",
+      color: "#b22222",
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.6
+    }).bindPopup(`${city} (${count} 次)`).addTo(map);
+  });
+</script>
+
+
 # 📝 Publications 
 
 <div class='paper-box'><div class='paper-box-image'><div><div class="badge">CVPR 2016</div><img src='images/500x300.png' alt="sym" width="100%"></div></div>
