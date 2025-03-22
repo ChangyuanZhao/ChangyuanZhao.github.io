@@ -9,6 +9,47 @@ document.addEventListener("DOMContentLoaded", function () {
   // 已处理链接的标记，防止重复绑定事件
   const HANDLED_ATTR = "data-spa-handled";
   
+  // 添加初始隐藏样式，防止子页面刷新时闪烁
+  (function preventFlash() {
+    // 检查是否为子页面刷新
+    const lastPath = sessionStorage.getItem("lastPath");
+    const currentPath = window.location.pathname;
+    const isSubpageRefresh = lastPath && lastPath !== "/" && currentPath === lastPath;
+    
+    if (isSubpageRefresh) {
+      // 检查布局是否完整
+      const hasFullLayout = document.querySelector("header") && 
+                            document.querySelector("footer") && 
+                            document.querySelector(".sidebar, .author__avatar");
+                            
+      if (!hasFullLayout) {
+        // 如果布局不完整，立即添加隐藏样式
+        document.documentElement.style.visibility = "hidden";
+        
+        // 设置重定向标记
+        sessionStorage.setItem("redirectedFrom", currentPath);
+        
+        // 使用更平滑的方式重定向到主页
+        window.location.replace("/");
+        return;
+      }
+    }
+    
+    // 添加页面过渡样式
+    const style = document.createElement("style");
+    style.textContent = `
+      html.content-loading {
+        visibility: hidden;
+      }
+      
+      html.content-loaded {
+        visibility: visible;
+        transition: opacity 0.3s ease;
+      }
+    `;
+    document.head.appendChild(style);
+  })();
+  
   /**
    * 加载页面内容
    * @param {string} url - 要加载的页面URL
@@ -261,34 +302,24 @@ document.addEventListener("DOMContentLoaded", function () {
   const currentPath = window.location.pathname + window.location.hash;
   history.replaceState({ url: currentPath }, document.title, currentPath);
   
-  // 检查是否为子页面刷新
-  const lastPath = sessionStorage.getItem("lastPath");
-  const isSubpageRefresh = lastPath && lastPath !== "/" && currentPath === lastPath;
-  
-  // 如果是子页面刷新并且检测到布局不完整，尝试恢复
-  if (isSubpageRefresh) {
-    const hasFullLayout = document.querySelector("header") && 
-                          document.querySelector("footer") && 
-                          document.querySelector(".sidebar, .author__avatar");
-    
-    if (!hasFullLayout) {
-      // 如果子页面刷新后没有完整布局，重定向到主页并记录原始请求的路径
-      sessionStorage.setItem("redirectedFrom", currentPath);
-      window.location.href = "/";
-      // 阻止后续代码执行
-      throw new Error("Redirecting to homepage to restore layout");
-    }
-  }
-  
   // 检查是否从主页重定向而来
   const redirectedFrom = sessionStorage.getItem("redirectedFrom");
   if (redirectedFrom) {
     // 清除重定向标记
     sessionStorage.removeItem("redirectedFrom");
-    // 加载原始请求的页面
-    setTimeout(() => {
+    
+    // 检查页面是否已经完全加载
+    if (document.readyState === 'complete') {
+      // 立即加载原始请求的页面
       loadPage(redirectedFrom, true);
-    }, 100);
+    } else {
+      // 如果页面还在加载中，等待完全加载后再加载原始页面
+      window.addEventListener('load', function() {
+        setTimeout(() => {
+          loadPage(redirectedFrom, true);
+        }, 10);
+      });
+    }
   }
   
   // 初始化页面链接
@@ -347,4 +378,26 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   `;
   document.head.appendChild(style);
+  
+  // 为子页面添加预加载链接，提高导航速度
+  function addPreloadLinks() {
+    const navLinks = document.querySelectorAll('a.nav-link');
+    const head = document.head;
+    
+    navLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && href.startsWith('/') && !href.includes('.')) {
+        const preloadLink = document.createElement('link');
+        preloadLink.rel = 'prefetch';
+        preloadLink.href = href;
+        head.appendChild(preloadLink);
+      }
+    });
+  }
+  
+  // 页面加载完成后添加预加载链接
+  window.addEventListener('load', addPreloadLinks);
+  
+  // 确保在 DOMContentLoaded 后让页面可见
+  document.documentElement.classList.add('content-loaded');
 });
