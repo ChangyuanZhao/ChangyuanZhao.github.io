@@ -1,6 +1,7 @@
 /**
  * acad-homepage SPA 实现
  * 专为 Jekyll 生成的学术主页设计
+ * 改进版：减少页面切换时的垂直跳动
  */
 document.addEventListener("DOMContentLoaded", function () {
   // 主内容区域
@@ -9,13 +10,24 @@ document.addEventListener("DOMContentLoaded", function () {
   // 已处理链接的标记，防止重复绑定事件
   const HANDLED_ATTR = "data-spa-handled";
   
+  // 记录当前内容区域高度
+  let lastContentHeight = 0;
+  
   /**
    * 加载页面内容
    * @param {string} url - 要加载的页面URL
    * @param {boolean} updateHistory - 是否更新浏览器历史
    */
   function loadPage(url, updateHistory = true) {
-    // 添加加载状态指示
+    // 在加载前记录当前内容区域高度
+    if (mainContent) {
+      lastContentHeight = mainContent.offsetHeight;
+      
+      // 设置最小高度来防止内容区域收缩
+      mainContent.style.minHeight = `${lastContentHeight}px`;
+    }
+    
+    // 添加加载状态指示，但不改变透明度（避免闪烁）
     document.body.classList.add("is-loading");
     
     // 处理URL，确保格式正确
@@ -43,35 +55,68 @@ document.addEventListener("DOMContentLoaded", function () {
         const newTitle = doc.querySelector("title")?.textContent || "";
         
         if (newInnerWrap && mainContent) {
-          // 更新内容
-          mainContent.innerHTML = newInnerWrap.innerHTML;
+          // 在更新内容前准备新内容的容器
+          const tempDiv = document.createElement('div');
+          tempDiv.style.visibility = 'hidden';
+          tempDiv.style.position = 'absolute';
+          tempDiv.style.width = getComputedStyle(mainContent).width;
+          tempDiv.innerHTML = newInnerWrap.innerHTML;
+          document.body.appendChild(tempDiv);
           
-          // 更新页面标题
-          document.title = newTitle;
+          // 获取新内容的高度
+          const newContentHeight = tempDiv.offsetHeight;
+          document.body.removeChild(tempDiv);
           
-          // 更新浏览器历史
-          if (updateHistory) {
-            history.pushState({ url: url }, newTitle, url);
-          }
+          // 应用淡入淡出过渡效果，但保持高度稳定
+          mainContent.classList.add('content-transitioning-out');
           
-          // 处理任何需要JavaScript初始化的元素
-          initDynamicElements();
-          
-          // 重新绑定链接事件
-          attachLinkHandlers();
-          
-          // 处理锚点滚动
-          if (hash) {
+          setTimeout(() => {
+            // 更新内容
+            mainContent.innerHTML = newInnerWrap.innerHTML;
+            
+            // 更新页面标题
+            document.title = newTitle;
+            
+            // 更新浏览器历史
+            if (updateHistory) {
+              history.pushState({ url: url }, newTitle, url);
+            }
+            
+            // 处理任何需要JavaScript初始化的元素
+            initDynamicElements();
+            
+            // 重新绑定链接事件
+            attachLinkHandlers();
+            
+            // 淡入新内容
+            mainContent.classList.remove('content-transitioning-out');
+            mainContent.classList.add('content-transitioning-in');
+            
+            // 逐渐调整到新内容的高度，使用动画过渡
+            mainContent.style.minHeight = `${newContentHeight}px`;
+            
+            // 处理锚点滚动
+            if (hash) {
+              setTimeout(() => {
+                const target = document.getElementById(hash);
+                if (target) {
+                  target.scrollIntoView({ behavior: "smooth" });
+                }
+              }, 100);
+            } else {
+              // 回到顶部
+              window.scrollTo(0, 0);
+            }
+            
+            // 完成后移除过渡类
             setTimeout(() => {
-              const target = document.getElementById(hash);
-              if (target) {
-                target.scrollIntoView({ behavior: "smooth" });
-              }
-            }, 100);
-          } else {
-            // 回到顶部
-            window.scrollTo(0, 0);
-          }
+              mainContent.classList.remove('content-transitioning-in');
+              // 完全加载后允许内容自然调整高度
+              setTimeout(() => {
+                mainContent.style.minHeight = '';
+              }, 300);
+            }, 300);
+          }, 150); // 短暂延迟以允许淡出效果
         }
       })
       .catch(error => {
@@ -92,6 +137,9 @@ document.addEventListener("DOMContentLoaded", function () {
             <p>尝试<a href="${url}" onclick="window.location.reload(); return false;">刷新页面</a>。</p>
           </div>`;
         }
+        
+        // 移除最小高度限制
+        mainContent.style.minHeight = '';
       })
       .finally(() => {
         // 移除加载状态
@@ -100,28 +148,25 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   
   /**
-   * 修复侧边栏高度问题
+   * 修复侧边栏高度问题 - 改进版，避免跳动
    */
   function fixSidebarHeight() {
     const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('#main-content');
-    const mainArea = document.querySelector('#main');
     
     if (sidebar && mainContent) {
-      // 重置侧边栏样式以避免累积的高度问题
-      sidebar.style.height = 'auto';
-      sidebar.style.minHeight = '';
-      
-      // 获取内容区域的高度
-      const contentHeight = mainContent.offsetHeight;
-      const sidebarHeight = sidebar.offsetHeight;
-      
-      // 确保侧边栏高度至少与内容区域相同
-      if (contentHeight > sidebarHeight) {
-        sidebar.style.minHeight = contentHeight + 'px';
-      }
-      
-      console.log("修复侧边栏高度: 内容高度=", contentHeight, "侧边栏高度=", sidebarHeight);
+      // 使用requestAnimationFrame确保计算发生在正确的时机
+      requestAnimationFrame(() => {
+        // 先获取现有的侧边栏高度
+        const currentSidebarHeight = sidebar.offsetHeight;
+        const contentHeight = mainContent.offsetHeight;
+        
+        // 只在内容真的比侧边栏高时才调整，并且使用平滑过渡
+        if (contentHeight > currentSidebarHeight) {
+          // 使用CSS过渡来平滑调整高度
+          sidebar.style.minHeight = contentHeight + 'px';
+        }
+      });
     }
   }
   
@@ -179,8 +224,10 @@ document.addEventListener("DOMContentLoaded", function () {
       setTimeout(window.initTravelMap, 100);
     }
     
-    // 修复侧边栏高度问题
+    // 修复侧边栏高度问题 - 使用延迟执行多次以确保在内容完全加载后调整
+    setTimeout(fixSidebarHeight, 100);
     setTimeout(fixSidebarHeight, 300);
+    setTimeout(fixSidebarHeight, 600);
   }
   
   /**
@@ -282,22 +329,29 @@ document.addEventListener("DOMContentLoaded", function () {
     html {
       overflow-y: scroll;
     }
+    
     .is-loading {
       cursor: wait;
     }
     
-    .is-loading #main-content {
-      opacity: 0.6;
-      transition: opacity 0.3s;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
+    /* 更平滑的内容过渡效果 */
     #main-content {
-      animation: fadeIn 0.3s;
+      transition: min-height 0.3s ease-out;
+    }
+    
+    .content-transitioning-out {
+      opacity: 0.3;
+      transition: opacity 0.15s ease-out;
+    }
+    
+    .content-transitioning-in {
+      opacity: 1;
+      transition: opacity 0.3s ease-in;
+    }
+    
+    /* 防止内容区域跳动 */
+    #main {
+      transition: min-height 0.3s ease;
     }
     
     /* 修复布局问题的样式 */
@@ -313,9 +367,9 @@ document.addEventListener("DOMContentLoaded", function () {
       display: block;
     }
     
-    /* 修复侧边栏高度问题 */
+    /* 修复侧边栏高度问题 - 使用平滑过渡 */
     .sidebar {
-      transition: min-height 0.3s ease;
+      transition: min-height 0.3s ease-out;
     }
     
     /* 错误提示样式 */
@@ -451,27 +505,34 @@ document.addEventListener("DOMContentLoaded", function () {
       console.warn("无旅行数据，无法更新统计数字");
     }
     
-    // 强制刷新地图布局
-    setTimeout(function() {
-      if (map) {
+    // 强制刷新地图布局 - 多次尝试以确保地图正确显示
+    if (map) {
+      map.invalidateSize();
+      // 再次尝试刷新，以防第一次不生效
+      setTimeout(function() {
         map.invalidateSize();
-        console.log("刷新地图布局");
-      }
-    }, 100);
+      }, 200);
+    }
     
-    // 触发侧边栏修复
+    // 触发侧边栏修复 - 使用多个时间点来确保正确应用
+    fixSidebarHeight();
     setTimeout(fixSidebarHeight, 200);
   };
   
   // 初始页面加载时修复侧边栏高度
+  setTimeout(fixSidebarHeight, 100);
   setTimeout(fixSidebarHeight, 500);
   
   // 监听窗口大小变化，随时修复侧边栏高度
   window.addEventListener('resize', function() {
-    fixSidebarHeight();
-    // 同时刷新地图布局
-    if (window.travelMap) {
-      window.travelMap.invalidateSize();
-    }
+    // 使用防抖处理来避免过多的调整
+    clearTimeout(window.resizeTimer);
+    window.resizeTimer = setTimeout(function() {
+      fixSidebarHeight();
+      // 同时刷新地图布局
+      if (window.travelMap) {
+        window.travelMap.invalidateSize();
+      }
+    }, 100);
   });
 });
