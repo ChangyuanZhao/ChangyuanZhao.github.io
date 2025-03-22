@@ -32,8 +32,6 @@ author_profile: true
 
 ## 🎤 Conference Papers
 
-## 🎤 Conference Papers
-
 {% assign confs = site.data.publications | where: "type", "Conference" %}
 {% assign confs_sorted = confs | sort: "year" | reverse %}
 {% assign current_year = "" %}
