@@ -146,6 +146,12 @@ document.addEventListener("DOMContentLoaded", function () {
         window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
       }
     }
+    
+    // 添加旅行地图初始化
+    if (typeof window.initTravelMap === 'function') {
+      console.log("SPA: 检测到旅行地图，尝试初始化");
+      setTimeout(window.initTravelMap, 100);
+    }
   }
   
   /**
@@ -284,4 +290,100 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   `;
   document.head.appendChild(style);
+  
+  // 定义全局旅行地图初始化函数，以便在SPA导航后重新初始化
+  window.initTravelMap = function() {
+    console.log("SPA环境: 初始化旅行地图");
+    
+    // 检查地图容器是否存在
+    const mapContainer = document.getElementById('travel-map');
+    if (!mapContainer) {
+      console.log("地图容器不存在，跳过初始化");
+      return;
+    }
+    
+    // 先销毁现有地图实例(如果有)
+    if (window.travelMap) {
+      console.log("销毁现有地图实例");
+      window.travelMap.remove();
+      window.travelMap = null;
+    }
+    
+    console.log("创建新地图实例");
+    // 初始化地图
+    const map = L.map('travel-map').setView([30, 105], 2);
+    window.travelMap = map;
+    
+    // 添加瓦片图层
+    try {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 10,
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+    } catch (e) {
+      console.error("主要瓦片源加载失败，尝试备用源", e);
+      
+      // 备用瓦片源
+      L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
+        maxZoom: 10,
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+    }
+    
+    // 尝试获取旅行数据 - 在SPA环境中需要特殊处理
+    let travelData = [];
+    
+    // 检查是否有全局数据对象
+    if (window.siteData && window.siteData.travelCities) {
+      travelData = window.siteData.travelCities;
+    } else {
+      console.warn("找不到旅行数据，地图将不显示标记点");
+    }
+    
+    // 处理旅行数据并添加标记
+    travelData.forEach(entry => {
+      const totalVisits = entry.visits.length;
+      const recentVisits = entry.visits.slice(0, Math.min(5, totalVisits)).reverse();
+      
+      const popupContent = `
+        <strong>${entry.city}</strong><br/>
+        🧭 Total trips: ${totalVisits}<br/>
+        🕒 Most recent ${recentVisits.length} trips:<br/>
+        <ul style="padding-left: 16px; margin: 5px 0;">
+          ${recentVisits.map(date => `<li>${date}</li>`).join("")}
+        </ul>
+      `;
+      
+      // 根据访问次数调整圆点大小
+      const baseSize = 3;
+      const growthFactor = 0.7;
+      const maxVisitsForSize = 8;
+      const effectiveVisits = Math.min(totalVisits, maxVisitsForSize);
+      const radius = baseSize + effectiveVisits * growthFactor;
+      
+      L.circleMarker([entry.lat, entry.lon], {
+        radius: radius,
+        fillColor: "#d62728",
+        color: "#b22222",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.7
+      }).bindPopup(popupContent).addTo(map);
+    });
+    
+    // 更新统计数字
+    if (travelData.length > 0) {
+      document.getElementById('total-cities').textContent = travelData.length;
+      let totalVisits = 0;
+      travelData.forEach(entry => {
+        totalVisits += entry.visits.length;
+      });
+      document.getElementById('total-visits').textContent = totalVisits;
+    }
+    
+    // 强制刷新地图布局
+    setTimeout(function() {
+      map.invalidateSize();
+    }, 100);
+  };
 });
