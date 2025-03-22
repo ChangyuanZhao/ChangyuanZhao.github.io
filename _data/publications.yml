@@ -50,4 +50,30 @@
     - Dusit Niyato
     - ...
 
+- title: "Cross-Modal Generative Semantic Communications for Mobile AIGC"
+  url: "https://doi.org/10.1109/TMC.2024.1234567"
+  code: "https://github.com/your/code-repo"
+  type: "Journal"     # ✅ 可为 "Journal" 或 "Conference"
+  year: 2023
+  venue: "IEEE Transactions on Mobile Computing"
+  short: "TMC"
+  authors:
+    - Yinqiu Liu
+    - Hongyang Du
+    - Dusit Niyato
+    - ...
+
+
+- title: "Cross-Modal Generative Semantic Communications for Mobile AIGC"
+  url: "https://doi.org/10.1109/TMC.2024.1234567"
+  code: "https://github.com/your/code-repo"
+  type: "Journal"     # ✅ 可为 "Journal" 或 "Conference"
+  year: 2021
+  venue: "IEEE Transactions on Mobile Computing"
+  short: "TMC"
+  authors:
+    - Yinqiu Liu
+    - Hongyang Du
+    - Dusit Niyato
+    - ...
 
