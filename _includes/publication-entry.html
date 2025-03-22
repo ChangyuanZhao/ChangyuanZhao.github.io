@@ -7,9 +7,9 @@
         {{ include.pub.short }}
       </span>
     </div>
-    <!-- Title with link - FIXED: removed white-space: nowrap and overflow properties -->
-    <div style="margin-top: 0.4em; font-weight: 600;">
-      <a href="{{ include.pub.url }}" target="_blank" style="text-decoration: none; color: inherit;">
+    <!-- Title with link - Improved to use max-width instead of fixed behavior -->
+    <div style="margin-top: 0.4em; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;">
+      <a href="{{ include.pub.url }}" target="_blank" style="text-decoration: none; color: inherit; display: inline-block; max-width: 100%;">
         {{ include.pub.title }}
       </a>
     </div>
