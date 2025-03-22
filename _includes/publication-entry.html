@@ -1,15 +1,15 @@
 <div class="paper-box" style="margin-bottom: 1.2em; width: 100%; max-width: 1100px; margin-left: auto; margin-right: auto;">
   <div class="paper-box-text" style="font-size: 0.95em; line-height: 1.5; width: 100%;">
-    
+
     <!-- Badge -->
     <div style="display: flex; align-items: center; justify-content: space-between;">
       <span style="background-color: #00369f; color: white; padding: 0.2em 0.5em; border-radius: 4px; font-weight: 600; font-size: 0.75em;">
         {{ include.pub.short }}
       </span>
     </div>
-    <!-- Title with link - Improved to use max-width instead of fixed behavior -->
-    <div style="margin-top: 0.4em; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;">
-      <a href="{{ include.pub.url }}" target="_blank" style="text-decoration: none; color: inherit; display: inline-block; max-width: 100%;">
+    <!-- Title with link -->
+    <div style="margin-top: 0.4em; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      <a href="{{ include.pub.url }}" target="_blank" style="text-decoration: none; color: inherit;">
         {{ include.pub.title }}
       </a>
     </div>
