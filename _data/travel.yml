@@ -32,12 +32,6 @@ cities:
       - 2025-01-10
       - 2024-12-20
       
-  - city: Johor Bahru
-    lat: 1.4927
-    lon: 103.7414
-    visits:
-      - 2025-01-29
-      
   - city: Hong Kong
     lat: 22.3193
     lon: 114.1694
