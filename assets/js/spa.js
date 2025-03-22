@@ -1,156 +1,303 @@
 /**
- * 跨浏览器兼容的SPA刷新处理
- * 支持Chrome和其他主流浏览器
+ * acad-homepage SPA 实现 - 强化刷新处理
+ * 确保页面刷新时背景正确渲染
  */
 document.addEventListener("DOMContentLoaded", function () {
   // 定义关键变量
+  const isMobile = window.innerWidth < 768;
   const currentPath = window.location.pathname;
   const mainContent = document.querySelector(".page__content");
-  const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge|Edg/.test(navigator.userAgent);
   
-  console.log("当前浏览器:", isChrome ? "Chrome" : "非Chrome浏览器");
-  console.log("当前路径:", currentPath);
-  
-  // 设置主页背景为白色 (确保在所有浏览器中始终执行)
-  function enforceBackgroundColor() {
-    // 使用强制样式设置背景色
-    const styleElement = document.createElement('style');
-    styleElement.textContent = `
-      body, .page__content, .layout--single, .initial-content, .archive {
-        background-color: #ffffff !important;
-      }
-    `;
-    document.head.appendChild(styleElement);
-    
-    // 直接设置DOM元素样式
-    document.body.style.backgroundColor = "#ffffff";
-    
-    // 设置所有可能的容器元素
-    const containers = [
-      ".page__content", 
-      ".layout--single",
-      ".initial-content",
-      ".archive",
-      "main",
-      ".container"
-    ];
-    
-    containers.forEach(selector => {
-      const elements = document.querySelectorAll(selector);
-      elements.forEach(el => {
-        if(el) el.style.backgroundColor = "#ffffff";
-      });
-    });
-    
-    console.log("强制设置背景颜色完成");
+  // 设置主页背景为白色
+  document.body.style.backgroundColor = "#ffffff";
+  if (document.querySelector(".page__content")) {
+    document.querySelector(".page__content").style.backgroundColor = "#ffffff";
   }
   
-  // 立即执行背景颜色设置
-  enforceBackgroundColor();
+  // === 新增：检测刷新操作 ===
+  // 使用performance API检测是否为页面刷新
+  const isRefresh = (performance && performance.navigation && 
+                     performance.navigation.type === 1) || 
+                    (window.performance && window.performance.getEntriesByType && 
+                     window.performance.getEntriesByType("navigation")[0]?.type === "reload");
   
-  // === Chrome特定处理 ===
-  // 如果是Chrome浏览器并且在子页面，可能需要特殊处理
-  if (isChrome && currentPath !== "/" && !currentPath.endsWith("index.html")) {
-    // 检查页面是否是刷新访问的
-    const isPageRefresh = (
-      (performance && performance.navigation && performance.navigation.type === 1) ||
-      (window.performance && window.performance.getEntriesByType && 
-       window.performance.getEntriesByType("navigation")[0]?.type === "reload")
-    );
+  // 子页面刷新处理逻辑
+  if (isRefresh && currentPath !== "/" && !currentPath.endsWith("index.html")) {
+    console.log("检测到子页面刷新操作，重定向至首页后再返回");
     
-    // 在Chrome浏览器中检测到子页面刷新时的特殊处理
-    if (isPageRefresh) {
-      console.log("Chrome浏览器检测到子页面刷新，使用特殊处理");
-      
-      // 保存当前路径以便返回
-      const currentUrl = window.location.href;
-      sessionStorage.setItem('chromeRefreshUrl', currentUrl);
-      
-      // 添加加载指示器
-      const loadingIndicator = document.createElement('div');
-      loadingIndicator.innerHTML = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.8);z-index:9999;display:flex;justify-content:center;align-items:center;"><div>加载中...</div></div>';
-      document.body.appendChild(loadingIndicator);
-      
-      // 使用异步延时确保当前页面的所有资源都已经加载完成
-      setTimeout(() => {
-        // 强制重新加载当前页面 - 这会绕过缓存并完全重新渲染页面
-        window.location.reload(true);
-      }, 50);
-    }
+    // 保存当前路径和滚动位置
+    const targetPath = window.location.pathname;
+    const scrollPosition = {
+      x: window.scrollX,
+      y: window.scrollY
+    };
+    
+    // 存储重定向信息
+    sessionStorage.setItem('redirectTarget', targetPath);
+    sessionStorage.setItem('scrollPosition', JSON.stringify(scrollPosition));
+    sessionStorage.setItem('isRefresh', 'true');
+    
+    // 跳转到首页
+    window.location.href = "/";
+    return;
   }
   
-  // 检查是否是从Chrome刷新重定向回来的状态
-  const chromeRefreshUrl = sessionStorage.getItem('chromeRefreshUrl');
-  if (chromeRefreshUrl) {
-    console.log("检测到Chrome刷新重定向状态，清除状态");
-    sessionStorage.removeItem('chromeRefreshUrl');
-  }
-  
-  // 通用的子页面处理 - 非Chrome浏览器或Chrome非刷新访问
-  if (!isChrome && currentPath !== "/" && !currentPath.endsWith("index.html")) {
-    console.log("非Chrome浏览器子页面访问，使用传统处理");
+  // 检查是否为子页面直接访问（非刷新情况）
+  if (!isRefresh && currentPath !== "/" && !currentPath.endsWith("index.html")) {
+    console.log("子页面直接访问，使用传统导航");
     
+    // === 关键修改：子页面访问时确保完整布局 ===
     // 检查是否缺少主要布局元素
     const mainContainer = document.querySelector(".layout--single");
     const masthead = document.querySelector(".masthead");
     const sidebar = document.querySelector(".sidebar");
     
     if (!mainContainer || !masthead || !sidebar) {
-      console.log("检测到子页面缺少布局元素，重定向到首页");
+      console.log("子页面访问时缺少布局，重定向到首页并带上目标路径");
       
-      // 记住当前URL以便返回
-      sessionStorage.setItem('redirectTarget', window.location.pathname);
+      // 保存当前路径
+      const targetPath = window.location.pathname;
+      sessionStorage.setItem('redirectTarget', targetPath);
+      sessionStorage.setItem('isRefresh', 'false'); // 标记为非刷新重定向
       
       // 跳转到首页
       window.location.href = "/";
       return;
     }
+    
+    // 处理样式一致性问题 - 确保子页面样式和主页一致
+    ensureConsistentStyle();
+    
+    // 初始化内容
+    if (mainContent) {
+      initContent();
+    }
+    
+    // 初始绑定链接
+    bindLinks();
+    
+    // 子页面使用传统导航，不启用SPA加载
+    return;
   }
   
-  // 处理从主页到子页面的重定向
+  // === 增强：首页加载时检查是否有重定向目标 ===
   if (currentPath === "/" || currentPath.endsWith("index.html")) {
     const redirectTarget = sessionStorage.getItem('redirectTarget');
+    const isRefreshRedirect = sessionStorage.getItem('isRefresh') === 'true';
+    
     if (redirectTarget) {
-      console.log("主页检测到重定向目标:", redirectTarget);
-      sessionStorage.removeItem('redirectTarget');
+      console.log(`检测到重定向目标: ${redirectTarget}, 刷新状态: ${isRefreshRedirect ? '刷新' : '常规'}`);
       
-      // 确保主页完全加载后再跳转
+      // 清除存储的目标和刷新状态
+      sessionStorage.removeItem('redirectTarget');
+      sessionStorage.removeItem('isRefresh');
+      
+      // 恢复滚动位置（如果有）
+      const savedScrollPosition = sessionStorage.getItem('scrollPosition');
+      if (savedScrollPosition) {
+        try {
+          const position = JSON.parse(savedScrollPosition);
+          sessionStorage.removeItem('scrollPosition');
+          
+          // 在页面跳转后恢复滚动位置
+          const restoreScroll = () => {
+            window.scrollTo(position.x, position.y);
+            console.log(`恢复滚动位置: (${position.x}, ${position.y})`);
+          };
+          
+          // 记录恢复滚动的函数，稍后执行
+          window.restoreScrollPosition = restoreScroll;
+        } catch (e) {
+          console.error("解析滚动位置时出错:", e);
+        }
+      }
+      
+      // 优先等待首页完全加载后再跳转
+      // 刷新操作使用稍长的延迟确保样式完全加载
+      const delay = isRefreshRedirect ? 500 : 300;
       setTimeout(() => {
-        console.log("执行重定向跳转到:", redirectTarget);
-        window.location.href = redirectTarget;
-      }, 500);
+        loadPage(redirectTarget, true); // 第二个参数表示这是重定向后的加载
+      }, delay);
     }
   }
   
-  // === 全局背景处理器 - 在页面加载和DOM变化时运行 ===
-  // 创建MutationObserver来监听DOM变化并确保背景颜色
-  const backgroundObserver = new MutationObserver(() => {
-    enforceBackgroundColor();
-  });
+  // 没有主内容区域则退出
+  if (!mainContent) {
+    console.error("无法找到.page__content，禁用SPA");
+    return;
+  }
   
-  // 监听文档体的变化
-  backgroundObserver.observe(document.body, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['style', 'class']
-  });
+  // 链接处理标记
+  const HANDLED_ATTR = "data-spa-link";
   
-  // 在页面加载后和每隔一段时间强制执行背景颜色
-  window.addEventListener('load', enforceBackgroundColor);
-  
-  // 定期检查并强制应用背景颜色 (页面完全加载后)
-  setTimeout(() => {
-    enforceBackgroundColor();
-    
-    // 之后每秒检查一次背景颜色，持续5秒
-    let checkCount = 0;
-    const intervalId = setInterval(() => {
-      enforceBackgroundColor();
-      checkCount++;
-      if (checkCount >= 5) {
-        clearInterval(intervalId);
+  // 确保样式一致性的函数
+  function ensureConsistentStyle() {
+    // 添加CSS样式确保页面背景为白色
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+      body, .page__content, .layout--single {
+        background-color: #ffffff !important;
       }
-    }, 1000);
-  }, 1000);
+    `;
+    document.head.appendChild(styleElement);
+    
+    // 检查并修复可能的布局问题
+    const layoutElement = document.querySelector('.layout--single');
+    if (layoutElement) {
+      layoutElement.style.backgroundColor = "#ffffff";
+    }
+  }
+  
+  // 增强的页面加载函数，支持刷新后恢复
+  function loadPage(url, isRedirectLoad = false) {
+    // 简单的加载指示
+    const loadingDiv = document.createElement("div");
+    loadingDiv.textContent = "Loading...";
+    loadingDiv.style.position = "fixed";
+    loadingDiv.style.top = "50%";
+    loadingDiv.style.left = "50%";
+    loadingDiv.style.transform = "translate(-50%, -50%)";
+    loadingDiv.style.padding = "10px";
+    loadingDiv.style.background = "rgba(0,0,0,0.5)";
+    loadingDiv.style.color = "white";
+    loadingDiv.style.borderRadius = "5px";
+    loadingDiv.style.zIndex = "9999";
+    document.body.appendChild(loadingDiv);
+    
+    // 获取页面
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`页面加载失败: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const newContent = doc.querySelector(".page__content");
+        
+        if (newContent) {
+          // 更新标题
+          document.title = doc.title;
+          
+          // === 关键修改：保留布局，只更新主内容 === 
+          mainContent.innerHTML = newContent.innerHTML;
+          
+          // 更新URL (如果是重定向加载，使用replace而不是push，避免历史记录重复)
+          if (isRedirectLoad) {
+            history.replaceState({url: url}, document.title, url);
+          } else {
+            history.pushState({url: url}, document.title, url);
+          }
+          
+          // 初始化内容
+          initContent();
+          
+          // 重新绑定链接
+          bindLinks();
+          
+          // 如果需要恢复滚动位置
+          if (isRedirectLoad && window.restoreScrollPosition) {
+            setTimeout(() => {
+              window.restoreScrollPosition();
+              window.restoreScrollPosition = null; // 清除函数引用
+            }, 100);
+          } else {
+            // 正常导航，回到顶部
+            window.scrollTo(0, 0);
+          }
+        } else {
+          // 回退到传统导航
+          window.location.href = url;
+        }
+      })
+      .catch(error => {
+        console.error("SPA加载错误:", error);
+        // 始终回退到传统导航
+        window.location.href = url;
+      })
+      .finally(() => {
+        // 移除加载指示
+        document.body.removeChild(loadingDiv);
+      });
+  }
+  
+  // 初始化页面内容
+  function initContent() {
+    // 处理内联脚本
+    const scripts = mainContent.querySelectorAll("script");
+    scripts.forEach(oldScript => {
+      const newScript = document.createElement("script");
+      
+      // 复制属性
+      Array.from(oldScript.attributes).forEach(attr => {
+        newScript.setAttribute(attr.name, attr.value);
+      });
+      
+      // 复制内容
+      newScript.innerHTML = oldScript.innerHTML;
+      
+      // 替换旧脚本
+      oldScript.parentNode.replaceChild(newScript, oldScript);
+    });
+    
+    // 初始化旅行地图
+    if (typeof window.initTravelMap === 'function') {
+      setTimeout(window.initTravelMap, 300);
+    }
+    
+    // 确保背景颜色为白色
+    document.body.style.backgroundColor = "#ffffff";
+    if (mainContent) {
+      mainContent.style.backgroundColor = "#ffffff";
+    }
+    
+    // === 关键修改：检查和修复边栏激活状态 ===
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.sidebar .nav__items a').forEach(link => {
+      const href = link.getAttribute('href');
+      // 清除所有激活状态
+      link.parentElement.classList.remove('active');
+      
+      // 为当前页面设置激活状态
+      if (href && currentPath.includes(href) && href !== '/') {
+        link.parentElement.classList.add('active');
+      }
+    });
+  }
+  
+  // 绑定所有内部链接
+  function bindLinks() {
+    document.querySelectorAll('a[href^="/"]').forEach(link => {
+      // 跳过已处理链接
+      if (link.hasAttribute(HANDLED_ATTR)) return;
+      
+      const href = link.getAttribute('href');
+      
+      // 跳过资源链接
+      if (href.match(/\.(pdf|zip|jpg|png|gif|svg)$/i)) return;
+      
+      // 标记为已处理
+      link.setAttribute(HANDLED_ATTR, "true");
+      
+      // 添加点击处理
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        loadPage(href);
+      });
+    });
+  }
+  
+  // 处理后退按钮
+  window.addEventListener('popstate', function(event) {
+    if (event.state && event.state.url) {
+      loadPage(event.state.url);
+    } else {
+      loadPage(window.location.pathname);
+    }
+  });
+  
+  // 初始绑定链接
+  bindLinks();
 });
