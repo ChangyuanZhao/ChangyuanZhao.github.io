@@ -45,7 +45,7 @@ For more information, please visit our research group at NTU.
 
 # 🌍 Travel Map
 
-<div id="travel-map" style="height: 400px; border-radius: 8px; margin: 20px 0;"></div>
+<div id="travel-map" style="height: 400px; width: 100%; border-radius: 8px; margin: 20px 0; position: relative; z-index: 1;"></div>
 
 <p class="map-stats">截至目前共访问了 <span id="total-cities">0</span> 个城市，累计 <span id="total-visits">0</span> 次旅行体验。</p>
 
@@ -85,25 +85,42 @@ For more information, please visit our research group at NTU.
   }
 </style>
 
-
-
 <!-- Leaflet 地图库 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
+  window.onload = function() {
+    console.log("开始初始化地图...");
+    console.log("地图容器:", document.getElementById('travel-map'));
+    
+    // 防止多次初始化
+    if (window.travelMap) {
+      console.log("地图已初始化，跳过");
+      return;
+    }
+    
     // 初始化地图
     const map = L.map('travel-map').setView([30, 105], 2);
+    window.travelMap = map;
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 10,
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-  });
-</script>
-
-// 旅行数据
+    // 尝试多个瓦片源，增加可靠性
+    try {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 10,
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+    } catch (e) {
+      console.error("主要瓦片源加载失败，尝试备用源", e);
+      
+      // 备用瓦片源
+      L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
+        maxZoom: 10,
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+    }
+    
+    // 旅行数据
     const travelData = [
       {
         "city": "北京",
@@ -157,64 +174,21 @@ For more information, please visit our research group at NTU.
         fillOpacity: 0.7
       }).bindPopup(popupContent).addTo(map);
     });
-
-
-
-
-
-// 更新统计数字
+    
+    // 更新统计数字
     document.getElementById('total-cities').textContent = travelData.length;
     let totalVisits = 0;
     travelData.forEach(entry => {
       totalVisits += entry.visits.length;
     });
     document.getElementById('total-visits').textContent = totalVisits;
-
-
-
-
-
-
-
-// 将这段代码添加到页面最底部
-<script>
-  window.onload = function() {
-    // 初始化地图
-    const map = L.map('travel-map').setView([30, 105], 2);
-    
-    // 尝试多个瓦片源，增加可靠性
-    try {
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 10,
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
-    } catch (e) {
-      console.error("主要瓦片源加载失败，尝试备用源", e);
-      
-      // 备用瓦片源
-      L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
-        maxZoom: 10,
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
-    }
-    
-    // 旅行数据
-    const travelData = [
-      {
-        "city": "北京",
-        "lat": 39.9042,
-        "lon": 116.4074,
-        "visits": ["2023-12-15", "2023-10-01", "2023-07-20", "2022-05-10", "2022-01-25"]
-      },
-      // 其他城市数据...
-    ];
-    
-    // 添加标记
-    travelData.forEach(entry => {
-      // 处理每个城市的代码...
-    });
     
     // 强制刷新地图布局
+    setTimeout(function() {
+      map.invalidateSize();
+    }, 100);
+  };
+</script>
     setTimeout(function() {
       map.invalidateSize();
     }, 100);
