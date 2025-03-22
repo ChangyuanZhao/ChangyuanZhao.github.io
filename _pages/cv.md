@@ -6,9 +6,7 @@ excerpt: ""
 author_profile: true
 ---
 
-<div class="paper-box">
-  <div class="paper-box-text">
-
+<div id="travel-map" style="height: 0; width: 100%; margin: 20px 0; position: relative; z-index: 1; display: none;"></div>
 # 📖 Educations
 - *Nanyang Technological University, Singapore*  
 **Ph.D., Aug 2023 – Present**  
@@ -27,5 +25,4 @@ author_profile: true
 # 🎖 Honors and Awards
 - *2024.11* One project received an Honorable Mention in the 2024 ComSoc Student Competition *"Communications Technology Changing the World"*, ranking among the top 16 out of 93 submissions.
 
- </div>
-</div>
+
