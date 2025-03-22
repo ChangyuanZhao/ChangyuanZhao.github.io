@@ -35,6 +35,9 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
     
+    // 设置当前页面类型
+    setCurrentPageType(window.location.pathname);
+    
     // 添加页面过渡样式
     const style = document.createElement("style");
     style.textContent = `
@@ -51,11 +54,83 @@ document.addEventListener("DOMContentLoaded", function () {
   })();
   
   /**
+   * 根据URL设置当前页面类型标记
+   */
+  function setCurrentPageType(url) {
+    // 根据URL确定页面类型
+    let pageType = "home";
+    
+    if (url.includes("/publications")) {
+      pageType = "publications";
+    } else if (url.includes("/cv")) {
+      pageType = "cv";
+    } else if (url.includes("/teaching")) {
+      pageType = "teaching";
+    } else if (url.includes("/portfolio")) {
+      pageType = "portfolio";
+    }
+    
+    // 设置body的数据属性以便CSS可以针对特定页面类型应用样式
+    document.body.setAttribute("data-current-page", pageType);
+  }
+  
+  /**
+   * 保存头像和侧边栏的布局状态
+   */
+  function saveLayoutState() {
+    const avatarContainer = document.querySelector('.author__avatar');
+    const sidebar = document.querySelector('.sidebar');
+    
+    if (!avatarContainer || !sidebar) return null;
+    
+    // 记录当前侧边栏和头像的位置
+    const avatarRect = avatarContainer.getBoundingClientRect();
+    const sidebarRect = sidebar.getBoundingClientRect();
+    
+    return {
+      avatarTop: avatarRect.top,
+      avatarHeight: avatarRect.height,
+      avatarWidth: avatarRect.width,
+      sidebarTop: sidebarRect.top
+    };
+  }
+  
+  /**
+   * 固定头像位置，防止切换页面时的偏移
+   */
+  function stabilizePhotos() {
+    const avatarContainer = document.querySelector('.author__avatar');
+    const avatarImg = avatarContainer ? avatarContainer.querySelector('img') : null;
+    
+    if (avatarImg) {
+      // 如果图片已加载完成，记录其位置和尺寸
+      if (avatarImg.complete) {
+        const rect = avatarImg.getBoundingClientRect();
+        avatarContainer.style.height = `${rect.height}px`;
+        avatarContainer.style.width = `${rect.width}px`;
+      } else {
+        // 如果图片未加载完成，添加加载事件
+        avatarImg.onload = function() {
+          const rect = this.getBoundingClientRect();
+          avatarContainer.style.height = `${rect.height}px`;
+          avatarContainer.style.width = `${rect.width}px`;
+        };
+      }
+    }
+  }
+  
+  /**
    * 加载页面内容
    * @param {string} url - 要加载的页面URL
    * @param {boolean} updateHistory - 是否更新浏览器历史
    */
   function loadPage(url, updateHistory = true) {
+    // 保存当前布局状态
+    const layoutState = saveLayoutState();
+    
+    // 先固定头像位置，防止布局偏移
+    stabilizePhotos();
+    
     // 保存当前内容区域高度，以减少内容加载时的跳动
     const currentHeight = mainContent.offsetHeight;
     mainContent.style.minHeight = `${currentHeight}px`;
@@ -69,6 +144,9 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // 对于路径结尾的URL，如果服务器返回目录索引则自动追加index.html
     const requestUrl = cleanUrl.endsWith("/") ? cleanUrl : cleanUrl;
+    
+    // 设置当前页面类型
+    setCurrentPageType(url);
     
     // 发送请求获取页面
     fetch(requestUrl)
@@ -120,8 +198,19 @@ document.addEventListener("DOMContentLoaded", function () {
             // 重新绑定链接事件
             attachLinkHandlers();
             
+            // 恢复布局状态，保持照片位置稳定
+            if (layoutState) {
+              const avatarContainer = document.querySelector('.author__avatar');
+              if (avatarContainer) {
+                avatarContainer.style.height = `${layoutState.avatarHeight}px`;
+                avatarContainer.style.width = `${layoutState.avatarWidth}px`;
+              }
+            }
+            
             // 移除高度限制，允许内容自然调整
-            mainContent.style.minHeight = '';
+            setTimeout(() => {
+              mainContent.style.minHeight = '';
+            }, 200);
             
             // 处理锚点滚动
             if (hash) {
@@ -325,6 +414,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // 初始化页面链接
   attachLinkHandlers();
   
+  // 页面加载完成后固定头像位置
+  window.addEventListener('load', stabilizePhotos);
+  
   // 添加样式
   const style = document.createElement("style");
   style.textContent = `
@@ -368,6 +460,52 @@ document.addEventListener("DOMContentLoaded", function () {
     /* 禁用页面滚动条跳动 */
     html {
       scrollbar-gutter: stable;
+    }
+    
+    /* 修复头像位置偏移问题 */
+    .author__avatar {
+      position: relative;
+      overflow: hidden;
+      transition: none !important;
+    }
+    
+    .author__avatar img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+      transform: translateZ(0);
+      will-change: transform;
+      backface-visibility: hidden;
+    }
+    
+    /* 固定侧边栏位置 */
+    .sidebar {
+      position: sticky;
+      top: 2em;
+      height: calc(100vh - 4em);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      contain: layout style;
+      will-change: contents;
+    }
+    
+    /* 确保页面主容器在过渡期间保持稳定 */
+    #main {
+      min-height: 100vh;
+      contain: layout;
+    }
+    
+    /* 防止内容高度变化导致的布局偏移 */
+    .page__inner-wrap {
+      min-height: 200px;
+    }
+    
+    /* 修复特定页面之间的切换问题 */
+    body[data-current-page="publications"] .author__avatar,
+    body[data-current-page="cv"] .author__avatar {
+      height: auto !important;
+      transition: none !important;
     }
     
     .notice--danger {
