@@ -6,6 +6,8 @@ excerpt: ""
 author_profile: true
 ---
 
+<div class="paper-box">
+  <div class="paper-box-text">
 
 # 📖 Educations
 - *Nanyang Technological University, Singapore*  
@@ -25,3 +27,5 @@ author_profile: true
 # 🎖 Honors and Awards
 - *2024.11* One project received an Honorable Mention in the 2024 ComSoc Student Competition *"Communications Technology Changing the World"*, ranking among the top 16 out of 93 submissions.
 
+ </div>
+</div>
