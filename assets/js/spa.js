@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // 主内容区域
   const mainContent = document.querySelector("#main-content");
   
-  // 检测是否为移动设备
-  const isMobile = window.innerWidth < 768;
+  // 检测是否为移动设备 (更可靠的检测方法)
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
   
   // 已处理链接的标记，防止重复绑定事件
   const HANDLED_ATTR = "data-spa-handled";
@@ -28,12 +28,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // 对于路径结尾的URL，如果服务器返回目录索引则自动追加index.html
     const requestUrl = cleanUrl.endsWith("/") ? cleanUrl : cleanUrl;
     
-    // 移动设备上简化加载过程
-    if (isMobile) {
-      console.log("移动设备: 使用简化页面加载");
-      window.location.href = url;
-      return;
-    }
+    // 在移动设备上也使用SPA，但要特别处理布局问题
+    console.log("加载页面:", requestUrl);
     
     // 发送请求获取页面
     fetch(requestUrl)
@@ -53,6 +49,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const newTitle = doc.querySelector("title")?.textContent || "";
         
         if (newInnerWrap && mainContent) {
+          // 记录滚动位置
+          const scrollPos = window.scrollY;
+          
           // 更新内容
           mainContent.innerHTML = newInnerWrap.innerHTML;
           
@@ -64,36 +63,43 @@ document.addEventListener("DOMContentLoaded", function () {
             history.pushState({ url: url }, newTitle, url);
           }
           
+          // 防止内容加载导致的页面偏移
+          document.body.style.overflow = 'hidden';
+          document.body.style.width = '100%';
+          
           // 处理任何需要JavaScript初始化的元素
           initDynamicElements();
           
           // 重新绑定链接事件
           attachLinkHandlers();
           
-          // 处理锚点滚动
-          if (hash) {
-            setTimeout(() => {
+          // 恢复滚动功能
+          setTimeout(() => {
+            document.body.style.overflow = '';
+            
+            // 处理锚点滚动
+            if (hash) {
               const target = document.getElementById(hash);
               if (target) {
                 target.scrollIntoView({ behavior: "smooth" });
               }
-            }, 100);
-          } else {
-            // 回到顶部
-            window.scrollTo(0, 0);
-          }
+            } else {
+              // 回到顶部
+              window.scrollTo(0, 0);
+            }
+          }, 50);
         }
       })
       .catch(error => {
         console.error("SPA加载错误:", error);
         
-        // 处理加载失败 - 在移动设备上直接重定向
+        // 无论什么错误，在移动端直接重定向
         if (isMobile) {
-          window.location.href = url;
+          window.location = url;
           return;
         }
         
-        // 桌面设备上显示错误消息
+        // 处理加载失败 - 桌面设备显示错误消息
         if (error.message.includes("404")) {
           // 对于404错误，可以选择导航到主页或显示错误消息
           mainContent.innerHTML = `<div class="notice--danger">
@@ -159,16 +165,12 @@ document.addEventListener("DOMContentLoaded", function () {
    * 修复侧边栏高度问题
    */
   function fixSidebarHeight() {
-    // 移动端不需要调整侧边栏高度
-    if (isMobile) return;
-    
     const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('#main-content');
     
     if (sidebar && mainContent) {
       // 重置侧边栏样式以避免累积的高度问题
       sidebar.style.height = 'auto';
-      sidebar.style.minHeight = '';
       
       // 获取内容区域的高度
       const contentHeight = mainContent.offsetHeight;
@@ -237,20 +239,26 @@ document.addEventListener("DOMContentLoaded", function () {
       setTimeout(window.initTravelMap, 100);
     }
     
-    // 修复移动端布局问题 - 优先级高
-    setTimeout(fixMobileLayout, 100);
+    // 根据设备类型应用不同的修复
+    if (isMobile) {
+      setTimeout(fixMobileLayout, 100);
+    } else {
+      setTimeout(fixSidebarHeight, 300);
+    }
     
-    // 修复侧边栏高度问题
-    setTimeout(fixSidebarHeight, 300);
+    // 防止页面偏移 - 在内容初始化完成后重置页面宽度
+    setTimeout(() => {
+      const bodyWidth = document.body.style.width;
+      if (bodyWidth) {
+        document.body.style.width = '';
+      }
+    }, 300);
   }
   
   /**
    * 为页面内链接附加SPA导航事件
    */
   function attachLinkHandlers() {
-    // 移动设备上不使用SPA导航
-    if (isMobile) return;
-    
     // 查找所有内部链接
     const links = document.querySelectorAll(`a[href^="/"], a[href^="./"], a[href^="../"]`);
     
@@ -275,6 +283,13 @@ document.addEventListener("DOMContentLoaded", function () {
         // 添加点击事件
         link.addEventListener("click", function(e) {
           e.preventDefault();
+          
+          // 移动端的特殊处理
+          if (isMobile && window.location.pathname !== href) {
+            window.location.href = href;
+            return;
+          }
+          
           loadPage(href);
         });
       }
@@ -285,8 +300,10 @@ document.addEventListener("DOMContentLoaded", function () {
    * 处理浏览器后退/前进导航
    */
   window.addEventListener("popstate", function(event) {
-    // 移动设备上不拦截历史导航
-    if (isMobile) return;
+    // 在移动设备上使用传统导航处理
+    if (isMobile) {
+      return;
+    }
     
     if (event.state && event.state.url) {
       loadPage(event.state.url, false);
@@ -303,19 +320,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // 保存刷新前的路径
     localStorage.setItem("lastPath", window.location.pathname);
   });
-  
-  // 移动设备上直接应用布局修复，不启用SPA
-  if (isMobile) {
-    console.log("移动设备检测：不启用SPA导航，直接修复布局");
-    fixMobileLayout();
-    // 初始化旅行地图
-    if (typeof window.initTravelMap === 'function') {
-      setTimeout(window.initTravelMap, 500);
-    }
-    return; // 不继续执行SPA初始化代码
-  }
-  
-  // 以下代码在移动设备上不会执行
   
   // 设置初始历史状态
   const currentPath = window.location.pathname + window.location.hash;
@@ -351,6 +355,13 @@ document.addEventListener("DOMContentLoaded", function () {
     setTimeout(() => {
       loadPage(redirectedFrom, true);
     }, 200); // 稍微增加延迟，确保主页完全加载
+  }
+  
+  // 应用初始布局修复
+  if (isMobile) {
+    fixMobileLayout();
+  } else {
+    fixSidebarHeight();
   }
   
   // 初始化页面链接
@@ -393,6 +404,11 @@ document.addEventListener("DOMContentLoaded", function () {
     /* 修复侧边栏高度问题 */
     .sidebar {
       transition: min-height 0.3s ease;
+    }
+    
+    /* 修复布局偏移问题 */
+    body {
+      overflow-x: hidden !important;
     }
     
     /* 移动端特定样式 */
@@ -611,17 +627,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("刷新地图布局");
       }
     }, 100);
-    
-    // 移动端无需触发侧边栏修复
-    if (!isMobile) {
-      setTimeout(fixSidebarHeight, 200);
-    }
   };
-  
-  // 初始页面加载时修复侧边栏高度
-  if (!isMobile) {
-    setTimeout(fixSidebarHeight, 500);
-  }
   
   // 监听窗口大小变化，随时修复布局
   window.addEventListener('resize', function() {
