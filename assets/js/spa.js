@@ -1,6 +1,6 @@
 /**
  * acad-homepage SPA 实现 - 强化刷新处理
- * 确保页面刷新时背景正确渲染
+ * 修复地图在页面切换后不显示的问题
  */
 document.addEventListener("DOMContentLoaded", function () {
   // 定义关键变量
@@ -242,10 +242,33 @@ document.addEventListener("DOMContentLoaded", function () {
       oldScript.parentNode.replaceChild(newScript, oldScript);
     });
     
-    // 初始化旅行地图
+    // === 修复：更强大的地图初始化处理 ===
     if (typeof window.initTravelMap === 'function') {
-      setTimeout(window.initTravelMap, 300);
+      console.log("检测到地图初始化函数，准备加载地图...");
+      // 使用更长的延迟以确保DOM完全加载
+      setTimeout(() => {
+        try {
+          // 检查地图容器是否存在
+          const mapContainer = document.getElementById('travel-map') || document.querySelector('.travel-map-container');
+          if (mapContainer) {
+            console.log("找到地图容器，初始化地图");
+            window.initTravelMap();
+          } else {
+            console.log("未找到地图容器，跳过地图初始化");
+          }
+        } catch (e) {
+          console.error("地图初始化错误:", e);
+        }
+      }, 800); // 增加延迟时间
+    } else {
+      console.log("未检测到地图初始化函数");
     }
+    
+    // === 新增：触发自定义事件，通知页面内容已更新 ===
+    const contentUpdateEvent = new CustomEvent('spa:contentUpdated', {
+      detail: { path: window.location.pathname }
+    });
+    document.dispatchEvent(contentUpdateEvent);
     
     // 确保背景颜色为白色
     document.body.style.backgroundColor = "#ffffff";
@@ -300,4 +323,12 @@ document.addEventListener("DOMContentLoaded", function () {
   
   // 初始绑定链接
   bindLinks();
+  
+  // === 新增：监听地图初始化需求 ===
+  document.addEventListener('spa:needMapInit', function() {
+    if (typeof window.initTravelMap === 'function') {
+      console.log("收到地图初始化请求");
+      setTimeout(window.initTravelMap, 300);
+    }
+  });
 });
