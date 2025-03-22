@@ -8,10 +8,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const currentPath = window.location.pathname;
   const mainContent = document.querySelector(".page__content");
   
-  // 立即应用基础样式修复 - 无论是SPA还是传统导航
-  // 这样即使在传统导航模式下也能修复布局问题
-  applyBaseStyleFixes();
-  
   // 修复问题1：移动端菜单栏与正文之间的空白
   function fixMobileLayout() {
     if (isMobile) {
@@ -97,65 +93,26 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
   
-  // 基础样式修复函数 - 应用于所有页面，无论SPA还是传统导航
-  function applyBaseStyleFixes() {
-    // 应用CSS修复
-    applyCommonStyles();
-    
-    // 监听完全加载事件，确保即使在完全加载后仍应用修复
-    window.addEventListener("load", function() {
-      setTimeout(function() {
-        applyCommonStyles();
-        // 修复地图大小（如果存在）
-        if (window.travelMap) {
-          window.travelMap.invalidateSize();
-        }
-      }, 200);
-    });
-    
-    // 监听窗口大小变化，重新应用修复
-    window.addEventListener('resize', function() {
-      setTimeout(applyCommonStyles, 100);
-    });
-  }
-  
-  // 应用通用样式修复 - 针对所有导航类型
-  function applyCommonStyles() {
-    // 移动端检测
-    const currentIsMobile = window.innerWidth < 768;
-    
-    // 1. 修复移动端布局问题
-    if (currentIsMobile) {
-      fixMobileLayout();
-    }
-    
-    // 2. 修复背景渲染问题（适用于所有设备）
-    fixBackgroundRendering();
-    
-    // 3. 修复布局一致性问题
-    fixLayoutConsistency();
-  }
-  
   // 检查是否为子页面直接访问
   if (currentPath !== "/" && !currentPath.endsWith("index.html")) {
-    // 在传统导航模式下不启用SPA
-    console.log("子页面直接访问，使用传统导航并应用布局修复");
-    // 注意：已经在开始时应用了基础样式修复，所以这里不需要重复
+    // 判断是否为刷新子页面
+    const isRefreshing = true;
     
-    // 添加额外的修复，针对刷新子页面问题
-    if (isMobile) {
-      // 强制在移动端应用背景样式
-      document.documentElement.classList.add('mobile-subpage');
-      document.body.classList.add('mobile-subpage');
+    if (isRefreshing) {
+      // 修复：即使在传统导航模式下，也应用布局修复
+      fixMobileLayout();
+      fixBackgroundRendering();
+      fixLayoutConsistency();
       
-      // 确保页面容器有最小高度
-      const pageWrapper = document.querySelector(".page-wrapper, .archive, main, .page");
-      if (pageWrapper) {
-        pageWrapper.classList.add('mobile-subpage-content');
-      }
+      // 修复问题2：确保背景样式在子页面刷新时也应用
+      window.addEventListener("load", function() {
+        setTimeout(fixBackgroundRendering, 100);
+      });
+      
+      // 如果是直接访问子页面，使用传统导航，但应用布局修复
+      console.log("子页面直接访问，使用传统导航并应用布局修复");
+      return; // 不启用SPA，使用传统导航
     }
-    
-    return; // 不启用SPA，使用传统导航
   }
   
   // 没有主内容区域则退出
