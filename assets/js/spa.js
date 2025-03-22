@@ -1,93 +1,50 @@
 /**
  * acad-homepage SPA 实现
- * 支持子页面刷新并保持布局完整性
+ * 专为 Jekyll 生成的学术主页设计
  */
-
-// 在页面加载前保存当前布局状态
-const savedPath = window.location.pathname;
-let needsRefresh = false;
-
-// 检查是否有布局
-function checkLayout() {
-  // 检查关键布局元素是否存在
-  const hasHeader = document.querySelector("header");
-  const hasSidebar = document.querySelector(".sidebar, .author__avatar");
-  const hasFooter = document.querySelector("footer");
-  
-  return hasHeader && hasSidebar && hasFooter;
-}
-
 document.addEventListener("DOMContentLoaded", function () {
   // 主内容区域
   const mainContent = document.querySelector("#main-content");
   
-  // 已处理链接的标记
+  // 已处理链接的标记，防止重复绑定事件
   const HANDLED_ATTR = "data-spa-handled";
-  
-  // 检查布局并处理子页面刷新
-  if (savedPath !== "/" && savedPath !== "/index.html") {
-    // 等待一段时间再检查布局
-    setTimeout(function() {
-      if (!checkLayout()) {
-        console.log("子页面缺少布局, 正在完整刷新页面");
-        // 标记为需要强制刷新
-        localStorage.setItem("forceReload", savedPath);
-        // 使用 location.href 跳转到自身，这会触发完整页面加载
-        window.location.href = savedPath;
-        return;
-      }
-    }, 100);
-  }
-  
-  // 检查是否是强制刷新后的访问
-  const forceReload = localStorage.getItem("forceReload");
-  if (forceReload) {
-    // 清除标记
-    localStorage.removeItem("forceReload");
-    console.log("完成了强制刷新，页面应该有完整布局了");
-  }
   
   /**
    * 加载页面内容
+   * @param {string} url - 要加载的页面URL
+   * @param {boolean} updateHistory - 是否更新浏览器历史
    */
   function loadPage(url, updateHistory = true) {
-    // 添加加载状态
+    // 添加加载状态指示
     document.body.classList.add("is-loading");
     
-    // 处理URL
+    // 处理URL，确保格式正确
     const cleanUrl = url.split("#")[0];
     const hash = url.includes("#") ? url.split("#")[1] : "";
+    
+    // 对于路径结尾的URL，如果服务器返回目录索引则自动追加index.html
     const requestUrl = cleanUrl.endsWith("/") ? cleanUrl : cleanUrl;
     
-    console.log("SPA加载页面:", url);
-    
-    // 请求页面内容
+    // 发送请求获取页面
     fetch(requestUrl)
       .then(response => {
-        if (!response.ok) throw new Error(`页面加载失败: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`页面加载失败: ${response.status}`);
+        }
         return response.text();
       })
       .then(html => {
+        // 解析HTML
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
         
-        // 查找新内容
-        const newContent = doc.querySelector("#main-content");
+        // 查找新页面中的内容区域
+        const newInnerWrap = doc.querySelector("#main-content");
         const newTitle = doc.querySelector("title")?.textContent || "";
         
-        if (newContent && mainContent) {
-          // 使用平滑过渡效果
-          const transitionContainer = document.createElement('div');
-          transitionContainer.className = 'content-transition-enter';
-          transitionContainer.innerHTML = newContent.innerHTML;
-          
-          // 清空并添加新内容
-          mainContent.innerHTML = '';
-          mainContent.appendChild(transitionContainer);
-          
-          // 强制重绘以启动过渡
-          transitionContainer.offsetHeight;
-          transitionContainer.classList.add('content-transition-enter-active');
+        if (newInnerWrap && mainContent) {
+          // 更新内容
+          mainContent.innerHTML = newInnerWrap.innerHTML;
           
           // 更新页面标题
           document.title = newTitle;
@@ -97,119 +54,126 @@ document.addEventListener("DOMContentLoaded", function () {
             history.pushState({ url: url }, newTitle, url);
           }
           
-          // 初始化新内容
-          setTimeout(() => {
-            initDynamicElements();
-            attachLinkHandlers();
-            fixLayout();
-            
-            // 处理锚点滚动
-            if (hash) {
-              setTimeout(() => {
-                const target = document.getElementById(hash);
-                if (target) target.scrollIntoView({ behavior: "smooth" });
-              }, 50);
-            } else {
-              window.scrollTo(0, 0);
-            }
-          }, 300);
+          // 处理任何需要JavaScript初始化的元素
+          initDynamicElements();
+          
+          // 重新绑定链接事件
+          attachLinkHandlers();
+          
+          // 处理锚点滚动
+          if (hash) {
+            setTimeout(() => {
+              const target = document.getElementById(hash);
+              if (target) {
+                target.scrollIntoView({ behavior: "smooth" });
+              }
+            }, 100);
+          } else {
+            // 回到顶部
+            window.scrollTo(0, 0);
+          }
         }
       })
       .catch(error => {
-        console.error("页面加载错误:", error);
-        mainContent.innerHTML = `
-          <div class="notice--danger">
+        console.error("SPA加载错误:", error);
+        
+        // 处理加载失败 - 你可以选择回退到完整页面加载
+        if (error.message.includes("404")) {
+          // 对于404错误，可以选择导航到主页或显示错误消息
+          mainContent.innerHTML = `<div class="notice--danger">
+            <h4>页面未找到</h4>
+            <p>请尝试从<a href="/">主页</a>重新开始浏览。</p>
+          </div>`;
+        } else {
+          // 对于其他错误，显示错误消息
+          mainContent.innerHTML = `<div class="notice--danger">
             <h4>加载错误</h4>
             <p>${error.message}</p>
-            <p>尝试<a href="${url}">重新加载</a>页面</p>
-          </div>
-        `;
+            <p>尝试<a href="${url}" onclick="window.location.reload(); return false;">刷新页面</a>。</p>
+          </div>`;
+        }
       })
       .finally(() => {
+        // 移除加载状态
         document.body.classList.remove("is-loading");
       });
   }
   
   /**
-   * 修复布局问题
-   */
-  function fixLayout() {
-    // 修复头像和侧边栏
-    const avatarContainer = document.querySelector('.author__avatar');
-    if (avatarContainer) {
-      avatarContainer.style.display = 'block';
-      avatarContainer.style.overflow = 'hidden';
-      avatarContainer.style.marginBottom = '1em';
-      
-      const avatarImg = avatarContainer.querySelector('img');
-      if (avatarImg) {
-        avatarImg.style.maxWidth = '100%';
-        avatarImg.style.height = 'auto';
-        avatarImg.style.display = 'block';
-      }
-    }
-    
-    // 修复侧边栏
-    const sidebar = document.querySelector('.sidebar');
-    if (sidebar) {
-      sidebar.style.display = 'block';
-    }
-  }
-  
-  /**
-   * 初始化动态内容
+   * 初始化动态加载的元素
    */
   function initDynamicElements() {
-    // 处理懒加载图片
-    mainContent.querySelectorAll("img[data-src]").forEach(img => {
+    // 处理图片懒加载
+    document.querySelectorAll("img[data-src]").forEach(img => {
       if (img.dataset.src) {
         img.src = img.dataset.src;
         img.removeAttribute("data-src");
       }
     });
     
-    // 执行内联脚本
-    mainContent.querySelectorAll("script").forEach(oldScript => {
+    // 运行可能的内联脚本
+    const scripts = mainContent.querySelectorAll("script");
+    scripts.forEach(oldScript => {
       const newScript = document.createElement("script");
+      
+      // 复制脚本属性
       Array.from(oldScript.attributes).forEach(attr => {
         newScript.setAttribute(attr.name, attr.value);
       });
+      
+      // 复制脚本内容
       newScript.textContent = oldScript.textContent;
-      oldScript.parentNode?.replaceChild(newScript, oldScript);
+      
+      // 替换旧脚本
+      if (oldScript.parentNode) {
+        oldScript.parentNode.replaceChild(newScript, oldScript);
+      }
     });
     
-    // 初始化第三方库
+    // 重新初始化可能的第三方库
     if (typeof window.loadCitation === "function") {
       window.loadCitation();
     }
     
-    // 处理MathJax
+    // 如果有使用MathJax，根据不同版本调用不同方法
     if (window.MathJax) {
+      // MathJax v3.x
       if (typeof window.MathJax.typeset === 'function') {
         window.MathJax.typeset();
-      } else if (window.MathJax.Hub && typeof window.MathJax.Hub.Queue === 'function') {
+      }
+      // MathJax v2.x
+      else if (window.MathJax.Hub && typeof window.MathJax.Hub.Queue === 'function') {
         window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
       }
     }
   }
   
   /**
-   * 为内部链接添加SPA事件
+   * 为页面内链接附加SPA导航事件
    */
   function attachLinkHandlers() {
-    document.querySelectorAll(`a[href^="/"], a[href^="./"], a[href^="../"]`).forEach(link => {
-      if (link.hasAttribute(HANDLED_ATTR)) return;
+    // 查找所有内部链接
+    const links = document.querySelectorAll(`a[href^="/"], a[href^="./"], a[href^="../"]`);
+    
+    links.forEach(link => {
+      // 跳过已处理的链接
+      if (link.hasAttribute(HANDLED_ATTR)) {
+        return;
+      }
       
       const href = link.getAttribute("href");
       if (!href) return;
       
-      // 排除特定链接
-      const isResourceLink = href.match(/\.(pdf|zip|jpg|png|gif|mp4)$/i);
+      // 排除资源文件链接和外部链接
+      const isResourceLink = href.match(/\.(pdf|zip|rar|jpg|jpeg|png|gif|svg|mp4|mp3|docx?|xlsx?|pptx?)$/i);
       const isMailtoLink = href.startsWith("mailto:");
       const hasProtocol = href.includes("://");
       
       if (!isResourceLink && !isMailtoLink && !hasProtocol) {
+        // 标记为已处理
         link.setAttribute(HANDLED_ATTR, "true");
+        
+        // 添加点击事件
         link.addEventListener("click", function(e) {
           e.preventDefault();
           loadPage(href);
@@ -218,45 +182,90 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
   
-  // 处理浏览器导航
+  /**
+   * 处理浏览器后退/前进导航
+   */
   window.addEventListener("popstate", function(event) {
-    const url = event.state?.url || window.location.pathname;
-    loadPage(url, false);
+    if (event.state && event.state.url) {
+      loadPage(event.state.url, false);
+    } else {
+      // 如果没有状态，使用当前URL
+      loadPage(window.location.pathname + window.location.hash, false);
+    }
+  });
+  
+  /**
+   * 检查页面刷新情况
+   */
+  window.addEventListener("beforeunload", function() {
+    // 保存刷新前的路径
+    localStorage.setItem("lastPath", window.location.pathname);
   });
   
   // 设置初始历史状态
-  const currentPath = window.location.pathname;
+  const currentPath = window.location.pathname + window.location.hash;
   history.replaceState({ url: currentPath }, document.title, currentPath);
   
-  // 附加链接处理器
-  attachLinkHandlers();
+  // 检查是否为子页面刷新
+  const lastPath = localStorage.getItem("lastPath");
+  const isSubpageRefresh = lastPath && lastPath !== "/" && currentPath === lastPath;
   
-  // 修复初始布局
-  fixLayout();
+  // 如果是子页面刷新并且检测到布局不完整，尝试恢复
+  if (isSubpageRefresh) {
+    const hasFullLayout = document.querySelector("header") && 
+                          document.querySelector("footer") && 
+                          document.querySelector(".sidebar, .author__avatar");
+    
+    if (!hasFullLayout) {
+      console.log("检测到子页面刷新且布局不完整，重定向到主页...");
+      // 如果子页面刷新后没有完整布局，重定向到主页并记录原始请求的路径
+      localStorage.setItem("redirectedFrom", currentPath);
+      window.location.href = "/";
+      // 阻止后续代码执行
+      throw new Error("Redirecting to homepage to restore layout");
+    }
+  }
+  
+  // 检查是否从主页重定向而来
+  const redirectedFrom = localStorage.getItem("redirectedFrom");
+  if (redirectedFrom) {
+    console.log("从主页重定向回到原始页面:", redirectedFrom);
+    // 清除重定向标记
+    localStorage.removeItem("redirectedFrom");
+    // 加载原始请求的页面
+    setTimeout(() => {
+      loadPage(redirectedFrom, true);
+    }, 200); // 稍微增加延迟，确保主页完全加载
+  }
+  
+  // 初始化页面链接
+  attachLinkHandlers();
   
   // 添加样式
   const style = document.createElement("style");
   style.textContent = `
-    /* 加载状态 */
-    body.is-loading { cursor: wait; }
-    body.is-loading #main-content { opacity: 0.7; transition: opacity 0.3s; }
-    
-    /* 内容过渡 */
-    .content-transition-enter {
-      opacity: 0;
-      transform: translateY(10px);
+    .is-loading {
+      cursor: wait;
     }
     
-    .content-transition-enter-active {
-      opacity: 1;
-      transform: translateY(0);
-      transition: opacity 0.3s, transform 0.3s;
+    .is-loading #main-content {
+      opacity: 0.6;
+      transition: opacity 0.3s;
     }
     
-    /* 布局修复 */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    #main-content {
+      animation: fadeIn 0.3s;
+    }
+    
+    /* 修复布局问题的样式 */
     .author__avatar {
-      overflow: hidden;
       display: block;
+      overflow: hidden;
       margin-bottom: 1em;
     }
     
@@ -266,11 +275,7 @@ document.addEventListener("DOMContentLoaded", function () {
       display: block;
     }
     
-    .sidebar {
-      display: block;
-    }
-    
-    /* 错误提示 */
+    /* 错误提示样式 */
     .notice--danger {
       padding: 1.5em;
       background-color: #ffebee;
