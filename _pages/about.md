@@ -48,7 +48,7 @@ For more information, please visit our research group at NTU.
 # 🌍 Travel Map
 
 <div id="travel-map" style="height: 400px; width: 100%; border-radius: 8px; margin: 20px 0; position: relative; z-index: 1;"></div>
-<p class="map-stats">Since 2025 Dec., I have visited <span id="total-cities">0</span> cities with a total of <span id="total-visits">0</span> travel experiences.</p>
+<p class="map-stats">Since 2024 Dec., I have visited <span id="total-cities">0</span> cities with a total of <span id="total-visits">0</span> travel experiences.</p>
 <style>
   #travel-map {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
