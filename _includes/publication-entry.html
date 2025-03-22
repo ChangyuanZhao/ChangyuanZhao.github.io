@@ -7,14 +7,12 @@
         {{ include.pub.short }}
       </span>
     </div>
-
-    <!-- Title with link -->
-    <div style="margin-top: 0.4em; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+    <!-- Title with link - FIXED: removed white-space: nowrap and overflow properties -->
+    <div style="margin-top: 0.4em; font-weight: 600;">
       <a href="{{ include.pub.url }}" target="_blank" style="text-decoration: none; color: inherit;">
         {{ include.pub.title }}
       </a>
     </div>
-
     <!-- Authors -->
     <div style="margin-top: 0.3em;">
       {% assign display_limit = 7 %}
@@ -26,7 +24,6 @@
         and <span style="color: gray;">{{ total | minus: display_limit }} more</span>
       {% endif %}
     </div>
-
     <!-- Venue + Year + Code -->
     <div style="margin-top: 0.2em; font-style: italic; color: #444;">
       <em>{{ include.pub.venue }}</em>, {{ include.pub.year }}
@@ -34,6 +31,5 @@
         · <span style="font-style: normal;">🔗 <a href="{{ include.pub.code }}" target="_blank" style="color: #00369f; text-decoration: none;">[Code]</a></span>
       {% endif %}
     </div>
-
   </div>
 </div>
