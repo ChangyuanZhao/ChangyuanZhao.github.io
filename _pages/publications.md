@@ -11,7 +11,7 @@ classes: wide
 
 ---
 
-## 📰 Journal Papers
+## 📰 Journal & Magazine Papers
 
 {% assign journals = site.data.publications | where: "type", "Journal" %}
 {% assign journals_sorted = journals | sort: "year" | reverse %}
