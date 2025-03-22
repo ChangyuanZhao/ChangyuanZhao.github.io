@@ -47,11 +47,6 @@ For more information, please visit our research group at NTU.
 
 # 🌍 Travel Map
 
-<div class="paper-box" style="margin-bottom: 1.2em; width: 100%; max-width: 90vw; margin-left: auto; margin-right: auto;">
-  <div class="paper-box-text" style="font-size: 0.95em; line-height: 1.5; width: 100%;">
-  </div>
-</div>
-
 <div id="travel-map" style="height: 400px; width: 100%; border-radius: 8px; margin: 20px 0; position: relative; z-index: 1;"></div>
 <p class="map-stats">Since 2024 Dec., I have visited <span id="total-cities">0</span> cities with a total of <span id="total-visits">0</span> travel experiences.</p>
 <style>
