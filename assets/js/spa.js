@@ -42,18 +42,17 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 
-  // 拦截导航链接点击
   document.querySelectorAll("a.nav-link").forEach(link => {
     const href = link.getAttribute("href");
-
-    // 只处理站内链接（非锚点、非外链）
-    if (href.startsWith("/") && !href.includes("#")) {
+  
+    if (href.startsWith("/") && !href.includes(".") && !href.startsWith("//")) {
       link.addEventListener("click", function (e) {
         e.preventDefault();
         loadPage(href);
       });
     }
   });
+
 
   // 浏览器前进/后退按钮支持
   window.addEventListener("popstate", function () {
