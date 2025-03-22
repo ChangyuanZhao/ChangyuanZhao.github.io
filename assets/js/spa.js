@@ -6,6 +6,46 @@ document.addEventListener("DOMContentLoaded", function () {
   // 定义关键变量
   const isMobile = window.innerWidth < 768;
   const currentPath = window.location.pathname;
+  
+  // 设置主页背景为白色
+  document.body.style.backgroundColor = "#ffffff";
+  if (document.querySelector(".page__content")) {
+    document.querySelector(".page__content").style.backgroundColor = "#ffffff";
+  }
+  
+  // 检查是否为子页面直接访问（刷新情况）
+  if (currentPath !== "/" && !currentPath.endsWith("index.html")) {
+    console.log("子页面直接访问，使用传统导航");
+    
+    // 处理样式一致性问题 - 确保子页面样式和主页一致
+    // 此处不启用SPA，让子页面使用原生加载方式，但我们可以确保样式一致性
+    
+    // 确保页面样式一致性的函数
+    function ensureConsistentStyle() {
+      // 添加CSS样式确保页面背景为白色
+      const styleElement = document.createElement('style');
+      styleElement.textContent = `
+        body, .page__content, .layout--single {
+          background-color: #ffffff !important;
+        }
+      `;
+      document.head.appendChild(styleElement);
+      
+      // 检查并修复可能的布局问题
+      const layoutElement = document.querySelector('.layout--single');
+      if (layoutElement) {
+        layoutElement.style.backgroundColor = "#ffffff";
+      }
+    }
+    
+    // 应用样式一致性
+    ensureConsistentStyle();
+    
+    // 子页面使用传统导航，不启用SPA
+    return;
+  }
+  
+  // 从这里开始是SPA的实现，仅在主页中启用
   const mainContent = document.querySelector(".page__content");
   
   // 没有主内容区域则退出
@@ -13,10 +53,6 @@ document.addEventListener("DOMContentLoaded", function () {
     console.error("无法找到.page__content，禁用SPA");
     return;
   }
-  
-  // 设置主页背景为白色
-  document.body.style.backgroundColor = "#ffffff";
-  mainContent.style.backgroundColor = "#ffffff";
   
   // 链接处理标记
   const HANDLED_ATTR = "data-spa-link";
@@ -56,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
           mainContent.innerHTML = newContent.innerHTML;
           
           // 更新URL
-          history.pushState(null, document.title, url);
+          history.pushState({url: url}, document.title, url);
           
           // 初始化内容
           initContent();
@@ -108,7 +144,9 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // 确保背景颜色为白色
     document.body.style.backgroundColor = "#ffffff";
-    mainContent.style.backgroundColor = "#ffffff";
+    if (mainContent) {
+      mainContent.style.backgroundColor = "#ffffff";
+    }
   }
   
   // 绑定所有内部链接
@@ -134,68 +172,16 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   
   // 处理后退按钮
-  window.addEventListener('popstate', function() {
-    loadPage(window.location.pathname);
+  window.addEventListener('popstate', function(event) {
+    if (event.state && event.state.url) {
+      loadPage(event.state.url);
+    } else {
+      loadPage(window.location.pathname);
+    }
   });
   
-  // 直接访问子页面处理
-  if (currentPath !== "/" && !currentPath.endsWith("index.html")) {
-    console.log("直接访问子页面，加载主页模板和子页面内容");
-    
-    // 保存当前路径
-    const subpagePath = currentPath;
-    
-    // 先加载主页模板
-    fetch("/")
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`主页模板加载失败: ${response.status}`);
-        }
-        return response.text();
-      })
-      .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-        
-        // 提取主页模板的关键部分（例如导航菜单、页脚等）
-        // 注意：这里假设页面结构中有header和footer元素
-        const header = doc.querySelector("header");
-        const footer = doc.querySelector("footer");
-        const sidebar = doc.querySelector(".sidebar");
-        
-        if (header) {
-          const currentHeader = document.querySelector("header");
-          if (currentHeader) {
-            currentHeader.innerHTML = header.innerHTML;
-          }
-        }
-        
-        if (sidebar) {
-          const currentSidebar = document.querySelector(".sidebar");
-          if (currentSidebar) {
-            currentSidebar.innerHTML = sidebar.innerHTML;
-          }
-        }
-        
-        if (footer) {
-          const currentFooter = document.querySelector("footer");
-          if (currentFooter) {
-            currentFooter.innerHTML = footer.innerHTML;
-          }
-        }
-        
-        // 加载完主页模板后，再加载子页面内容
-        loadPage(subpagePath);
-      })
-      .catch(error => {
-        console.error("主页模板加载错误:", error);
-        // 在模板加载失败的情况下，仍然尝试加载子页面内容
-        loadPage(subpagePath);
-      });
-  } else {
-    // 初始绑定链接
-    bindLinks();
-  }
+  // 初始绑定链接
+  bindLinks();
   
   // 简单地引用旅行地图函数 (保持原有功能不变)
   window.initTravelMap = window.initTravelMap || function() {
