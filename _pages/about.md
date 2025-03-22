@@ -49,46 +49,49 @@ For more information, please visit our research group at NTU.
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-  const map = L.map('map').setView([20, 0], 2);  // 世界地图居中视角
+  document.addEventListener("DOMContentLoaded", function () {
+    const map = L.map('map').setView([20, 0], 2);  // 世界地图居中视角
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 8,
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 8,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
 
-  // 异步加载 travel 数据
-  fetch('/assets/data/travel.json')
-    .then(response => response.json())
-    .then(data => {
-      data.forEach(entry => {
-        const totalVisits = entry.visits.length;
-        const recentVisits = entry.visits.slice(-5).reverse(); // 最近 5 次，倒序
+    // 异步加载 travel 数据
+    fetch('/assets/data/travel.json')
+      .then(response => response.json())
+      .then(data => {
+        data.forEach(entry => {
+          const totalVisits = entry.visits.length;
+          const recentVisits = entry.visits.slice(-5).reverse();
 
-        const popupContent = `
-          <strong>${entry.city}</strong><br/>
-          🧭 出行次数：${totalVisits}<br/>
-          🕒 最近 5 次：<br/>
-          <ul style="padding-left: 16px;">
-            ${recentVisits.map(date => `<li>${date}</li>`).join("")}
-          </ul>
-        `;
+          const popupContent = `
+            <strong>${entry.city}</strong><br/>
+            🧭 出行次数：${totalVisits}<br/>
+            🕒 最近 5 次：<br/>
+            <ul style="padding-left: 16px;">
+              ${recentVisits.map(date => `<li>${date}</li>`).join("")}
+            </ul>
+          `;
 
-        const radius = 5 + totalVisits * 3;  // 出行越多，圈越大
+          const radius = 5 + totalVisits * 3;
 
-        L.circleMarker([entry.lat, entry.lon], {
-          radius: radius,
-          fillColor: "#d62728",
-          color: "#b22222",
-          weight: 1,
-          opacity: 1,
-          fillOpacity: 0.7
-        }).bindPopup(popupContent).addTo(map);
+          L.circleMarker([entry.lat, entry.lon], {
+            radius: radius,
+            fillColor: "#d62728",
+            color: "#b22222",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.7
+          }).bindPopup(popupContent).addTo(map);
+        });
+      })
+      .catch(error => {
+        console.error("加载出行数据失败：", error);
       });
-    })
-    .catch(error => {
-      console.error("加载出行数据失败：", error);
-    });
+  });
 </script>
+
 
 
 
