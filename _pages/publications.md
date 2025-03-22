@@ -23,24 +23,23 @@ author_profile: true
 - [Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet ipsum, ac tempus justo dapibus sit amet](https://github.com), A, B, C, **CVPR 2020**
 
 
-<div class="paper-box">
-  <div class="paper-box-text">
+<div class="paper-box" style="margin-bottom: 1.2em;">
+  <div class="paper-box-text" style="font-size: 0.95em; line-height: 1.5;">
     <div style="display: flex; align-items: center; justify-content: space-between;">
-      <span style="background-color: #00369f; color: white; padding: 0.2em 0.6em; border-radius: 4px; font-weight: bold; font-size: 0.8em;">TMC</span>
-      <span style="color: #ccc; font-size: 2em;">2024</span>
+      <span style="background-color: #00369f; color: white; padding: 0.2em 0.5em; border-radius: 4px; font-weight: 600; font-size: 0.75em;">TMC</span>
+      <span style="color: #ccc; font-size: 1.5em;">2024</span>
     </div>
 
-  <div style="margin-top: 0.5em;">
-    <strong>Cross-Modal Generative Semantic Communications for Mobile AIGC:</strong><br>
-    <strong>Joint Semantic Encoding and Prompt Engineering</strong>
-  </div>
+    <div style="margin-top: 0.4em; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      Cross-Modal Generative Semantic Communications for Mobile AIGC: Joint Semantic Encoding and Prompt Engineering
+    </div>
 
-  <div style="margin-top: 0.4em;">
-    Yinqiu Liu, Hongyang Du, Dusit Niyato, and <span style="color: gray; text-decoration: underline; cursor: pointer;">5 more authors</span>
-  </div>
+    <div style="margin-top: 0.3em;">
+      Yinqiu Liu, Hongyang Du, Dusit Niyato, Changyuan Zhao, Xiang Li, Yuchen Zhang, Yifan Chen, and <span style="color: gray;">2 more</span>
+    </div>
 
-  <div style="margin-top: 0.4em; font-style: italic;">
-    <em>IEEE Transactions on Mobile Computing</em>, 2024
-  </div>
+    <div style="margin-top: 0.2em; font-style: italic; color: #444;">
+      <em>IEEE Transactions on Mobile Computing</em>, 2024
+    </div>
   </div>
 </div>
