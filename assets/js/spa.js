@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (newContent && mainContent) {
           mainContent.innerHTML = newContent.innerHTML;
           document.title = doc.title;
+          window.scrollTo(0, 0); // 回顶部
 
           if (updateHistory) {
             history.pushState(null, "", fullUrl);
@@ -43,9 +44,9 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
+  // nav-link 点击监听
   document.querySelectorAll("a.nav-link").forEach(link => {
     const href = link.getAttribute("href");
-
     if (href.startsWith("/") && !href.includes(".") && !href.startsWith("//")) {
       link.addEventListener("click", function (e) {
         e.preventDefault();
@@ -54,13 +55,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // ✅ popstate 后退/前进 处理
   window.addEventListener("popstate", function () {
-    loadPage(location.pathname, false);
+    const path = window.location.hash.startsWith("#/")
+      ? window.location.hash.slice(1)
+      : window.location.pathname;
+    loadPage(path, false);
   });
 
-  // ✅ 新增逻辑：页面加载后自动尝试刷新当前路径
-  const currentPath = window.location.pathname;
-  if (currentPath !== "/" && currentPath !== "") {
-    loadPage(currentPath, false);
-  }
+  // ✅ 页面初始化时也加载一次当前路径
+  const currentPath = window.location.hash.startsWith("#/")
+    ? window.location.hash.slice(1)
+    : window.location.pathname;
+  loadPage(currentPath, false);
 });
