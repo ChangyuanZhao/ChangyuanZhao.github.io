@@ -8,6 +8,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const currentPath = window.location.pathname;
   const mainContent = document.querySelector(".page__content");
   
+  // 立即应用基础样式修复 - 无论是SPA还是传统导航
+  // 这样即使在传统导航模式下也能修复布局问题
+  applyBaseStyleFixes();
+  
   // 修复问题1：移动端菜单栏与正文之间的空白
   function fixMobileLayout() {
     if (isMobile) {
