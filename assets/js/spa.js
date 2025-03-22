@@ -1,32 +1,47 @@
 /**
  * acad-homepage SPA 实现
- * 专为 Jekyll 生成的学术主页设计
- * 简化版：仅替换内容，保持框架不变
+ * 全平台兼容版
  */
 document.addEventListener("DOMContentLoaded", function () {
-  // 主内容区域 - 精确定位为仅需要更新的部分
+  console.log("SPA框架初始化...");
+  
+  // 精确定位内容区域和包含框架
+  const contentWrap = document.querySelector(".page__inner-wrap");
   const mainContent = document.querySelector(".page__content");
-  if (!mainContent) {
-    console.error("无法找到主内容区域 .page__content");
+  
+  if (!mainContent || !contentWrap) {
+    console.error("无法找到必要的DOM元素，禁用SPA");
     return;
   }
+  
+  // 记录初始HTML结构
+  const initialContentHTML = contentWrap.innerHTML;
   
   // 已处理链接的标记
   const HANDLED_ATTR = "data-spa-handled";
   
+  // 防抖函数，用于避免多次快速调用
+  function debounce(func, wait) {
+    let timeout;
+    return function() {
+      const context = this, args = arguments;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+  }
+  
   /**
    * 加载页面内容
-   * 只更新 .page__content 区域，保持页面框架不变
    */
   function loadPage(url, updateHistory = true) {
+    console.log("SPA: 加载页面", url);
+    
     // 表明正在加载
     document.body.classList.add("is-loading");
     
     // 清理URL，获取hash
     const cleanUrl = url.split("#")[0];
     const hash = url.includes("#") ? url.split("#")[1] : "";
-    
-    console.log("SPA加载页面:", url);
     
     // 获取页面
     fetch(url)
@@ -41,24 +56,30 @@ document.addEventListener("DOMContentLoaded", function () {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
         
-        // 只查找内容区域
+        // 查找新页面内容区域
+        const newContentWrap = doc.querySelector(".page__inner-wrap");
         const newContent = doc.querySelector(".page__content");
         const newTitle = doc.querySelector("title")?.textContent || "";
         
+        // 仅更新内容区域，保持框架结构
         if (newContent) {
-          // 保存滚动位置
+          // 记录滚动位置和内容区域尺寸
           const scrollPos = window.scrollY;
-          
-          // 更新内容区域
-          mainContent.innerHTML = newContent.innerHTML;
+          const contentWidth = contentWrap.offsetWidth;
           
           // 更新页面标题
           document.title = newTitle;
+          
+          // 更新内容区域 - 可以选择更新整个包装器或仅内容
+          mainContent.innerHTML = newContent.innerHTML;
           
           // 更新浏览器历史
           if (updateHistory) {
             history.pushState({ url: url }, newTitle, url);
           }
+          
+          // 防止布局偏移
+          document.body.style.width = contentWidth + 'px';
           
           // 初始化新内容
           initDynamicElements();
@@ -67,31 +88,48 @@ document.addEventListener("DOMContentLoaded", function () {
           attachLinkHandlers();
           
           // 处理锚点滚动
-          if (hash) {
-            setTimeout(() => {
-              const target = document.getElementById(hash);
-              if (target) {
-                target.scrollIntoView({ behavior: "smooth" });
-              }
-            }, 100);
-          } else {
-            // 回到顶部
-            window.scrollTo(0, 0);
-          }
+          handleScrolling(hash);
+          
+          // 恢复正常布局
+          setTimeout(() => {
+            document.body.style.width = '';
+          }, 100);
         } else {
-          console.error("无法找到新页面中的 .page__content 区域");
-          window.location.href = url; // 回退到传统导航
+          // 如果找不到内容区域，回退到传统导航
+          window.location.href = url;
         }
       })
       .catch(error => {
         console.error("SPA加载错误:", error);
-        // 出错时回退到传统导航
+        // 尝试恢复先前的内容
+        contentWrap.innerHTML = initialContentHTML;
+        // 然后回退到传统导航
         window.location.href = url;
       })
       .finally(() => {
         // 移除加载状态
         document.body.classList.remove("is-loading");
       });
+  }
+  
+  /**
+   * 处理滚动逻辑
+   */
+  function handleScrolling(hash) {
+    if (hash) {
+      setTimeout(() => {
+        const target = document.getElementById(hash);
+        if (target) {
+          // 使用平滑滚动
+          target.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 200);
+    } else {
+      // 回到顶部，使用延迟确保DOM渲染完成
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 100);
+    }
   }
   
   /**
@@ -106,9 +144,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
     
-    // 运行可能的内联脚本
-    const scripts = mainContent.querySelectorAll("script");
-    scripts.forEach(oldScript => {
+    // 运行内联脚本
+    mainContent.querySelectorAll("script").forEach(oldScript => {
       const newScript = document.createElement("script");
       Array.from(oldScript.attributes).forEach(attr => {
         newScript.setAttribute(attr.name, attr.value);
@@ -119,13 +156,13 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
     
-    // 重新初始化旅行地图
+    // 初始化旅行地图
     if (typeof window.initTravelMap === 'function') {
-      console.log("SPA: 检测到旅行地图，尝试初始化");
-      setTimeout(window.initTravelMap, 100);
+      console.log("初始化旅行地图");
+      setTimeout(window.initTravelMap, 200);
     }
     
-    // 重新初始化其他组件
+    // 其他组件初始化
     if (typeof window.loadCitation === "function") {
       window.loadCitation();
     }
@@ -136,6 +173,46 @@ document.addEventListener("DOMContentLoaded", function () {
         window.MathJax.typeset();
       } else if (window.MathJax.Hub && typeof window.MathJax.Hub.Queue === 'function') {
         window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
+      }
+    }
+    
+    // 更新布局修复
+    fixLayout();
+  }
+  
+  /**
+   * 修复可能的布局问题
+   */
+  function fixLayout() {
+    // 修复侧边栏和内容高度
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar && mainContent) {
+      const contentHeight = mainContent.offsetHeight;
+      const sidebarHeight = sidebar.offsetHeight;
+      
+      if (contentHeight > sidebarHeight) {
+        sidebar.style.minHeight = contentHeight + 'px';
+      }
+    }
+    
+    // 处理移动端特定问题
+    if (window.innerWidth < 768) {
+      // 确保移动端下的侧边栏样式正确
+      const sidebarElements = document.querySelectorAll('.sidebar, .sidebar__right');
+      sidebarElements.forEach(el => {
+        if (el) {
+          el.style.float = 'none';
+          el.style.width = '100%';
+          el.style.marginLeft = '0';
+          el.style.marginRight = '0';
+        }
+      });
+      
+      // 修复作者头像在移动端的显示
+      const avatar = document.querySelector('.author__avatar');
+      if (avatar) {
+        avatar.style.display = 'block';
+        avatar.style.margin = '0 auto 1em';
       }
     }
   }
@@ -168,10 +245,62 @@ document.addEventListener("DOMContentLoaded", function () {
         // 添加点击事件
         link.addEventListener("click", function(e) {
           e.preventDefault();
-          loadPage(href);
+          // 使用防抖确保不会多次快速触发
+          debounce(loadPage, 100)(href);
         });
       }
     });
+  }
+  
+  /**
+   * 添加样式
+   */
+  function addStyles() {
+    const style = document.createElement("style");
+    style.textContent = `
+      .is-loading {
+        cursor: wait;
+      }
+      
+      .is-loading .page__content {
+        opacity: 0.6;
+        transition: opacity 0.3s;
+      }
+      
+      .page__content {
+        transition: opacity 0.3s;
+      }
+      
+      /* 防止布局偏移 */
+      body {
+        overflow-x: hidden !important;
+        max-width: 100% !important;
+        position: relative !important;
+      }
+      
+      .page__content, 
+      .page__inner-wrap {
+        overflow-x: visible !important;
+        box-sizing: border-box !important;
+      }
+      
+      /* 移动端特定样式 */
+      @media (max-width: 767px) {
+        .sidebar,
+        .sidebar__right {
+          float: none !important;
+          width: 100% !important;
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+        }
+        
+        .author__avatar {
+          display: block !important;
+          margin: 0 auto 1em !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
   }
   
   /**
@@ -186,48 +315,33 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
   
-  // 初始化页面链接
+  /**
+   * 窗口大小改变时修复布局
+   */
+  window.addEventListener('resize', debounce(function() {
+    console.log("窗口大小变化，修复布局");
+    fixLayout();
+    
+    // 刷新地图
+    if (window.travelMap) {
+      window.travelMap.invalidateSize();
+    }
+  }, 200));
+  
+  // 初始化SPA
+  addStyles();
   attachLinkHandlers();
+  fixLayout();
   
   // 设置初始历史状态
   const currentPath = window.location.pathname + window.location.hash;
   history.replaceState({ url: currentPath }, document.title, currentPath);
   
-  // 添加样式
-  const style = document.createElement("style");
-  style.textContent = `
-    .is-loading .page__content {
-      opacity: 0.6;
-      transition: opacity 0.3s;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    .page__content {
-      animation: fadeIn 0.3s;
-    }
-    
-    /* 修复布局偏移问题 */
-    body {
-      overflow-x: hidden !important;
-      max-width: 100vw;
-    }
-    
-    /* 确保内容区域不会引起偏移 */
-    .page__content {
-      overflow-x: hidden;
-      width: 100%;
-      box-sizing: border-box;
-    }
-  `;
-  document.head.appendChild(style);
-  
-  // 定义全局旅行地图初始化函数，以便在SPA导航后重新初始化
+  console.log("SPA框架初始化完成");
+
+  // 定义全局旅行地图初始化函数，确保能在内容更新后被调用
   window.initTravelMap = function() {
-    console.log("SPA环境: 初始化旅行地图");
+    console.log("初始化旅行地图");
     
     // 检查地图容器是否存在
     const mapContainer = document.getElementById('travel-map');
@@ -377,7 +491,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }).bindPopup(popupContent).addTo(map);
     });
     
-    // 更新统计数字 - 增强版
+    // 更新统计数字
     const totalCitiesElement = document.getElementById('total-cities');
     const totalVisitsElement = document.getElementById('total-visits');
     
@@ -404,8 +518,6 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         console.error("找不到 'total-visits' 元素");
       }
-    } else {
-      console.warn("无旅行数据，无法更新统计数字");
     }
     
     // 强制刷新地图布局
@@ -416,11 +528,4 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }, 100);
   };
-  
-  // 监听窗口大小变化，刷新地图布局
-  window.addEventListener('resize', function() {
-    if (window.travelMap) {
-      window.travelMap.invalidateSize();
-    }
-  });
 });
