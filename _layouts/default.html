@@ -5,9 +5,16 @@ layout: compress
 <!doctype html>
 <html lang="en" class="no-js">
   <head>
-    {% include head.html %}
-    {% include head/custom.html %}
-  </head>
+  {% include head.html %}
+  {% include head/custom.html %}
+  <!-- 保存全局数据供SPA使用 -->
+  <script>
+    // 在页面初始加载时储存旅行数据
+    window.siteData = {
+      travelCities: {{ site.data.travel.cities | jsonify }}
+    };
+  </script>
+</head>
 
   <body>
 
