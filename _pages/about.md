@@ -48,6 +48,43 @@ For more information, please visit our research group at NTU.
 <div id="travel-map" style="height: 400px; border-radius: 8px; margin: 20px 0;"></div>
 
 
+<style>
+  #travel-map {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+  }
+  
+  /* 弹出窗口样式 */
+  .leaflet-popup-content {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  
+  .leaflet-popup-content strong {
+    color: #d62728;
+    font-size: 16px;
+  }
+  
+  .leaflet-popup-content ul {
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+  
+  /* 添加统计信息样式 */
+  .map-stats {
+    text-align: center;
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 10px;
+  }
+  
+  .map-stats span {
+    font-weight: bold;
+    color: #d62728;
+  }
+</style>
+
+
 
 <!-- Leaflet 地图库 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
