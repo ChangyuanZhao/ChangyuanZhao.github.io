@@ -1,51 +1,34 @@
-<!-- Publication Entry -->
+
 <div class="paper-box" style="margin-bottom: 1.2em; width: 100%; max-width: 1600px; margin-left: auto; margin-right: auto;">
   <div class="paper-box-text" style="font-size: 0.95em; line-height: 1.5; width: 100%;">
-    <!-- Title and Badge in the same line -->
-    <div style="display: flex; align-items: baseline; margin-top: 0.4em; overflow: hidden;">
-      <!-- Badge/Abbreviation -->
-      <span style="background-color: #00369f; color: white; padding: 0.2em 0.5em; border-radius: 4px; font-weight: 600; font-size: 0.75em; margin-right: 0.7em; flex-shrink: 0;">
-        {{ pub.abbreviation }}
+    <!-- Badge -->
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <span style="background-color: #00369f; color: white; padding: 0.2em 0.5em; border-radius: 4px; font-weight: 600; font-size: 0.75em;">
+        {{ include.pub.short }}
       </span>
-      
-      <!-- Title with link -->
-      <div style="font-weight: 600; overflow: hidden; text-overflow: ellipsis;">
-        <a href="{{ pub.url }}" target="_blank" style="text-decoration: none; color: inherit;">
-          {{ pub.title }}
-        </a>
-      </div>
     </div>
-    
+    <!-- Title with link -->
+    <div style="margin-top: 0.4em; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      <a href="{{ include.pub.url }}" target="_blank" style="text-decoration: none; color: inherit;">
+        {{ include.pub.title }}
+      </a>
+    </div>
     <!-- Authors -->
     <div style="margin-top: 0.3em;">
       {% assign display_limit = 7 %}
-      {% assign total = pub.authors | size %}
-      {% for author in pub.authors limit: display_limit %}
+      {% assign total = include.pub.authors | size %}
+      {% for author in include.pub.authors limit: display_limit %}
         {{ author }}{% if forloop.last == false %}, {% endif %}
       {% endfor %}
       {% if total > display_limit %}
         and <span style="color: gray;">{{ total | minus: display_limit }} more</span>
       {% endif %}
     </div>
-    
-    <!-- Journal + Year + Links -->
+    <!-- Venue + Year + Code -->
     <div style="margin-top: 0.2em; font-style: italic; color: #444;">
-      <em>{{ pub.journal }}</em>{% if pub.volume %}, {{ pub.volume }}{% endif %}{% if pub.issue %}({{ pub.issue }}){% endif %}{% if pub.pages %}: {{ pub.pages }}{% endif %}, {{ pub.year }}
-      
-      {% if pub.doi or pub.url or pub.pdf %}
-        · <span style="font-style: normal;">
-          {% if pub.doi %}
-            🔗 <a href="https://doi.org/{{ pub.doi }}" target="_blank" style="color: #00369f; text-decoration: none;">[DOI]</a>
-          {% endif %}
-          
-          {% if pub.pdf %}
-            🔗 <a href="{{ pub.pdf }}" target="_blank" style="color: #00369f; text-decoration: none;">[PDF]</a>
-          {% endif %}
-          
-          {% if pub.code %}
-            🔗 <a href="{{ pub.code }}" target="_blank" style="color: #00369f; text-decoration: none;">[Code]</a>
-          {% endif %}
-        </span>
+      <em>{{ include.pub.venue }}</em>, {{ include.pub.year }}
+      {% if include.pub.code %}
+        · <span style="font-style: normal;">🔗 <a href="{{ include.pub.code }}" target="_blank" style="color: #00369f; text-decoration: none;">[Code]</a></span>
       {% endif %}
     </div>
   </div>
