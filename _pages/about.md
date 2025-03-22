@@ -22,19 +22,16 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet 
 
 Hi! I am currently a PhD candidate at the College of Computing and Data Science, Nanyang Technological University (NTU), Singapore, supervised by Prof. Dusit Niyato (IEEE Fellow).
 
-Prior to this, I obtained a BEng degree at the University of Science and Technology of China, China, and an MSc degree at the University of Chinese Academy of Sciences, Institute of Software, China, USA, under the guidance of [Prof. Bai Xue](https://lcs.ios.ac.cn/~xuebai/).
+Prior to this, I obtained a BEng degree at the University of Science and Technology of China, China, and an MSc degree at the University of Chinese Academy of Sciences, Institute of Software, China, under the guidance of [Prof. Bai Xue](https://lcs.ios.ac.cn/~xuebai/).
 
 My research is primarily centered around the utilization of Generative AI (GenAI) in intelligent networking. Our key objective is to explore “how the intelligent networks can support various AI-Generated Content (AIGC) services,” and “how GenAI (and LLM) can be used to improve the performance, security, and reliability of next-generation networking.” Please check our group at NTU for more details!
 
 
 
 
+My research interest includes neural machine translation and computer vision. I have published more than 100 papers at the top international AI conferences with total <a href='https://scholar.google.com/citations?user=FI6q53MAAAAJ'>google scholar citations <a href='https://scholar.google.com/citations?user=FI6q53MAAAAJ'><img src="https://img.shields.io/endpoint?url={{ url | url_encode }}&logo=Google%20Scholar&labelColor=f6f6f6&color=9cf&style=flat&label=citations"></a> 
 
-
-
-
-
-My research interest includes neural machine translation and computer vision. I have published more than 100 papers at the top international AI conferences with total <a href='https://scholar.google.com/citations?user=DhtAFkwAAAAJ'>google scholar citations <strong><span id='total_cit'>260000+</span></strong></a> (You can also use google scholar badge <a href='https://scholar.google.com/citations?user=DhtAFkwAAAAJ'><img src="https://img.shields.io/endpoint?url={{ url | url_encode }}&logo=Google%20Scholar&labelColor=f6f6f6&color=9cf&style=flat&label=citations"></a>).
+<!-- (You can also use google scholar badge <a href='https://scholar.google.com/citations?user=FI6q53MAAAAJ'><img src="https://img.shields.io/endpoint?url={{ url | url_encode }}&logo=Google%20Scholar&labelColor=f6f6f6&color=9cf&style=flat&label=citations"></a>).-->
 
 
 # 🔥 News
