@@ -24,7 +24,7 @@ redirect_from:
 
 Hi! I am currently a PhD candidate at the College of Computing and Data Science, Nanyang Technological University (NTU), Singapore, supervised by [Prof. Dusit Niyato](https://personal.ntu.edu.sg/dniyato/) (IEEE Fellow).
 
-Prior to this, I obtained a BEng degree at the University of Science and Technology of China, China, and an MSc degree at the University of Chinese Academy of Sciences, Institute of Software, China, under the guidance of [Prof. Bai Xue](https://lcs.ios.ac.cn/~xuebai/).
+Prior to this, I obtained a B.Sc. degree at the University of Science and Technology of China, China, and an M.Eng. degree at the University of Chinese Academy of Sciences, Institute of Software, China, under the guidance of [Prof. Bai Xue](https://lcs.ios.ac.cn/~xuebai/).
 
 My research is primarily centered around the utilization of Generative AI (GenAI) and Large Language Models (LLMs) in wireless communications and intelligent networking. 
 
