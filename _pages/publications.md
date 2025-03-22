@@ -26,7 +26,7 @@ author_profile: true
 <div class="paper-box">
   <div class="paper-box-text">
     <div style="display: flex; align-items: center; justify-content: space-between;">
-      <span style="background-color: #d100a4; color: white; padding: 0.2em 0.6em; border-radius: 4px; font-weight: bold; font-size: 0.8em;">TMC</span>
+      <span style="background-color: #00369f; color: white; padding: 0.2em 0.6em; border-radius: 4px; font-weight: bold; font-size: 0.8em;">TMC</span>
       <span style="color: #ccc; font-size: 2em;">2024</span>
     </div>
 
