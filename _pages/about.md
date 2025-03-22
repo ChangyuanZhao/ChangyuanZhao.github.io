@@ -55,34 +55,7 @@ For more information, please visit our research group at NTU.
     margin-bottom: 15px;
   }
   
-  /* 弹出窗口样式 */
-  .leaflet-popup-content {
-    font-size: 14px;
-    line-height: 1.4;
-  }
-  
-  .leaflet-popup-content strong {
-    color: #d62728;
-    font-size: 16px;
-  }
-  
-  .leaflet-popup-content ul {
-    margin-top: 5px;
-    margin-bottom: 5px;
-  }
-  
-  /* 添加统计信息样式 */
-  .map-stats {
-    text-align: center;
-    color: #666;
-    font-size: 0.9em;
-    margin-top: 10px;
-  }
-  
-  .map-stats span {
-    font-weight: bold;
-    color: #d62728;
-  }
+  /* 其他样式保持不变 */
 </style>
 <!-- Leaflet 地图库 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
@@ -99,18 +72,19 @@ For more information, please visit our research group at NTU.
       return;
     }
     
-    // 防止多次初始化
+    // 如果地图已存在，只刷新布局
     if (window.travelMap) {
-      // 如果地图已经存在，只需刷新布局
+      console.log("地图已存在，刷新布局");
       window.travelMap.invalidateSize();
       return;
     }
     
+    console.log("创建新地图实例");
     // 初始化地图
     const map = L.map('travel-map').setView([30, 105], 2);
     window.travelMap = map;
     
-    // 尝试多个瓦片源，增加可靠性
+    // 添加瓦片图层
     try {
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 10,
@@ -143,7 +117,7 @@ For more information, please visit our research group at NTU.
         </ul>
       `;
       
-      // 根据访问次数调整圆点大小，设置最大值
+      // 根据访问次数调整圆点大小
       const baseSize = 3;
       const growthFactor = 0.7;
       const maxVisitsForSize = 8;
@@ -174,17 +148,51 @@ For more information, please visit our research group at NTU.
     }, 100);
   }
 
-  // 页面加载时初始化地图
-  window.onload = initMap;
+  // 立即尝试初始化
+  initMap();
   
-  // 当URL的哈希部分变化时（例如点击锚点链接时）重新初始化地图
+  // 定期检查并尝试初始化地图（轮询机制）
+  function checkAndInitMap() {
+    const mapContainer = document.getElementById('travel-map');
+    if (mapContainer) {
+      if (!window.travelMap) {
+        console.log("轮询检测到地图容器但没有地图实例，初始化地图");
+        initMap();
+      } else {
+        // 确保地图布局正确
+        window.travelMap.invalidateSize();
+      }
+    }
+  }
+  
+  // 每1秒检查一次地图状态
+  setInterval(checkAndInitMap, 1000);
+  
+  // 各种事件监听
+  window.addEventListener('load', initMap);
+  window.addEventListener('DOMContentLoaded', initMap);
+  window.addEventListener('resize', function() {
+    if (window.travelMap) window.travelMap.invalidateSize();
+  });
   window.addEventListener('hashchange', function() {
-    // 给地图一点时间来重新布局
+    console.log("URL哈希变化，多次尝试初始化地图");
+    setTimeout(initMap, 100);
+    setTimeout(initMap, 500);
+    setTimeout(initMap, 1000);
+  });
+  window.addEventListener('popstate', function() {
+    console.log("历史状态变化，尝试初始化地图");
     setTimeout(initMap, 300);
   });
   
-  // 对于使用pushState的情况
-  window.addEventListener('popstate', function() {
-    setTimeout(initMap, 300);
+  // 为内部链接添加处理
+  document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('a[href^="#"]');
+    links.forEach(link => {
+      link.addEventListener('click', function() {
+        console.log("检测到内部链接点击");
+        setTimeout(initMap, 300);
+      });
+    });
   });
 </script>
