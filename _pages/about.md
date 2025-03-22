@@ -47,6 +47,7 @@ For more information, please visit our research group at NTU.
 
 <div id="travel-map" style="height: 400px; border-radius: 8px; margin: 20px 0;"></div>
 
+<p class="map-stats">截至目前共访问了 <span id="total-cities">0</span> 个城市，累计 <span id="total-visits">0</span> 次旅行体验。</p>
 
 <style>
   #travel-map {
@@ -161,7 +162,13 @@ For more information, please visit our research group at NTU.
 
 
 
-
+// 更新统计数字
+    document.getElementById('total-cities').textContent = travelData.length;
+    let totalVisits = 0;
+    travelData.forEach(entry => {
+      totalVisits += entry.visits.length;
+    });
+    document.getElementById('total-visits').textContent = totalVisits;
 
 
 
