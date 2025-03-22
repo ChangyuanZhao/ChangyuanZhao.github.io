@@ -59,3 +59,24 @@
     - Shuyuan Zhang
     - Lei Wang
     - Bai Xue
+    
+- title: "Outer-approximating Controlled Reach-avoid Sets for Polynomial Systems"
+  type: "Conference"     # ✅ 可为 "Journal" 或 "Conference"
+  year: 2022
+  venue: "2022 IEEE 61st Conference on Decision and Control"
+  short: "CDC"
+  authors:
+    - Changyuan Zhao
+    - Chuchu Fan
+    - Bai Xue
+    
+- title: "Supervised Score-Based Modeling by Gradient Boosting"
+  type: "Conference"     # ✅ 可为 "Journal" 或 "Conference"
+  year: 2025
+  venue: "2025 The 39th Annual AAAI Conference on Artificial Intelligence"
+  short: "AAAI"
+  authors:
+    - Changyuan Zhao
+    - Hongyang Du
+    - Guangyuan Liu
+    - Dusit Niyato
