@@ -6,7 +6,8 @@ excerpt: ""
 author_profile: true
 ---
 
-
+<div class="paper-box">
+  <div class="paper-box-text">
 
 # 📚 Teaching Assistant
 - *SC1007*: &nbsp; DATA STRUCTURES & ALGORITHMS, NTU, Fall Semester, 2024
