@@ -6,8 +6,8 @@
 # `jekyll serve`. If you change this file, please restart the server process.
 
 # Site Settings
-title                    : "Lorem ipsum"
-description              : "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet ipsum, ac tempus justo dapibus sit amet. "
+title                    : "Changyuan Zhao"
+description              : "*“Research is what I'm doing when I don't know what I'm doing.” – Wernher von Braun*"
 repository               : "ChangyuanZhao/zhaocy.github.io"
 google_scholar_stats_use_cdn : true
 
@@ -23,7 +23,7 @@ baidu_site_verification  :  # get baidu_site_verification from https://ziyuan.ba
 author:
   name             : "Changyuan Zhao"
   avatar           : "images/android-chrome-512x512.png"
-  bio              : "College of Computing and Data Science, \n Nanyang Technological University"
+  bio              : "College of Computing and Data Science, \n\n Nanyang Technological University"
   location         : "Singapore"
   employer         :
   pubmed           : 
