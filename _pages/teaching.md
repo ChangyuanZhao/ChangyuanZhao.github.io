@@ -1,9 +1,10 @@
 ---
 title: "Teaching"
 permalink: /teaching/
-layout: default 
+layout: page
 excerpt: ""
 author_profile: true
+classes: wide
 ---
 
 
