@@ -1,31 +1,32 @@
 ---
 title: "Publications"
 permalink: /publications/
-layout: default  
+layout: page
 excerpt: ""
 author_profile: true
+classes: wide
 ---
 
-# 📝 Publications 
-<!-- Journal Papers -->
+# 📝 Publications
+
+---
+
 ## 📰 Journal Papers
 
 {% assign journals = site.data.publications | where: "type", "Journal" %}
 {% assign journals_sorted = journals | sort: "year" | reverse %}
 {% assign current_year = "" %}
 
-{% for pub in site.data.publications %}
-{% if pub.year != current_year %}
-<hr style="border: none; border-top: 1px solid #ddd; position: relative; margin: 2em 0;">
-<div style="position: relative; margin-top: -2.2em; text-align: right; font-size: 1.1em; color: #bbb;">
-  {{ pub.year }}
-</div>
-{% assign current_year = pub.year %}
-{% endif %}
-
-{% include publication-entry.html pub=pub %}
+{% for pub in journals_sorted %}
+  {% if pub.year != current_year %}
+  <hr style="border: none; border-top: 1px solid #ddd; position: relative; margin: 2em 0;">
+  <div style="position: relative; margin-top: -2.2em; text-align: right; font-size: 1.1em; color: #bbb;">
+    {{ pub.year }}
+  </div>
+  {% assign current_year = pub.year %}
+  {% endif %}
+  {% include publication-entry.html pub=pub %}
 {% endfor %}
-
 
 ---
 
@@ -35,15 +36,13 @@ author_profile: true
 {% assign confs_sorted = confs | sort: "year" | reverse %}
 {% assign current_year = "" %}
 
-{% for pub in site.data.publications %}
-{% if pub.year != current_year %}
-<hr style="border: none; border-top: 1px solid #ddd; position: relative; margin: 2em 0;">
-<div style="position: relative; margin-top: -2.2em; text-align: right; font-size: 1.1em; color: #bbb;">
-  {{ pub.year }}
-</div>
-{% assign current_year = pub.year %}
-{% endif %}
-
-{% include publication-entry.html pub=pub %}
+{% for pub in confs_sorted %}
+  {% if pub.year != current_year %}
+  <hr style="border: none; border-top: 1px solid #ddd; position: relative; margin: 2em 0;">
+  <div style="position: relative; margin-top: -2.2em; text-align: right; font-size: 1.1em; color: #bbb;">
+    {{ pub.year }}
+  </div>
+  {% assign current_year = pub.year %}
+  {% endif %}
+  {% include publication-entry.html pub=pub %}
 {% endfor %}
-
