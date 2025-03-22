@@ -8,23 +8,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const currentPath = window.location.pathname;
   const mainContent = document.querySelector(".page__content");
   
-  // 检查是否为子页面直接访问
-  if (currentPath !== "/" && !currentPath.endsWith("index.html")) {
-    // 判断是否为刷新子页面
-    let isRefreshing = true;
-    
-    if (isRefreshing) {
-      // 如果是直接访问子页面且需要完整模板，直接使用传统方式导航
-      console.log("子页面直接访问，使用传统导航");
-      return; // 不启用SPA，使用传统导航
-    }
-  }
-  
   // 没有主内容区域则退出
   if (!mainContent) {
     console.error("无法找到.page__content，禁用SPA");
     return;
   }
+  
+  // 设置主页背景为白色
+  document.body.style.backgroundColor = "#ffffff";
+  mainContent.style.backgroundColor = "#ffffff";
   
   // 链接处理标记
   const HANDLED_ATTR = "data-spa-link";
@@ -113,6 +105,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (typeof window.initTravelMap === 'function') {
       setTimeout(window.initTravelMap, 300);
     }
+    
+    // 确保背景颜色为白色
+    document.body.style.backgroundColor = "#ffffff";
+    mainContent.style.backgroundColor = "#ffffff";
   }
   
   // 绑定所有内部链接
@@ -142,8 +138,64 @@ document.addEventListener("DOMContentLoaded", function () {
     loadPage(window.location.pathname);
   });
   
-  // 初始绑定链接
-  bindLinks();
+  // 直接访问子页面处理
+  if (currentPath !== "/" && !currentPath.endsWith("index.html")) {
+    console.log("直接访问子页面，加载主页模板和子页面内容");
+    
+    // 保存当前路径
+    const subpagePath = currentPath;
+    
+    // 先加载主页模板
+    fetch("/")
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`主页模板加载失败: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        
+        // 提取主页模板的关键部分（例如导航菜单、页脚等）
+        // 注意：这里假设页面结构中有header和footer元素
+        const header = doc.querySelector("header");
+        const footer = doc.querySelector("footer");
+        const sidebar = doc.querySelector(".sidebar");
+        
+        if (header) {
+          const currentHeader = document.querySelector("header");
+          if (currentHeader) {
+            currentHeader.innerHTML = header.innerHTML;
+          }
+        }
+        
+        if (sidebar) {
+          const currentSidebar = document.querySelector(".sidebar");
+          if (currentSidebar) {
+            currentSidebar.innerHTML = sidebar.innerHTML;
+          }
+        }
+        
+        if (footer) {
+          const currentFooter = document.querySelector("footer");
+          if (currentFooter) {
+            currentFooter.innerHTML = footer.innerHTML;
+          }
+        }
+        
+        // 加载完主页模板后，再加载子页面内容
+        loadPage(subpagePath);
+      })
+      .catch(error => {
+        console.error("主页模板加载错误:", error);
+        // 在模板加载失败的情况下，仍然尝试加载子页面内容
+        loadPage(subpagePath);
+      });
+  } else {
+    // 初始绑定链接
+    bindLinks();
+  }
   
   // 简单地引用旅行地图函数 (保持原有功能不变)
   window.initTravelMap = window.initTravelMap || function() {
