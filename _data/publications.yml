@@ -1,3 +1,5 @@
+# code: ""
+
 - title: "Generative AI for secure physical layer communications: A survey"
   url: "https://ieeexplore.ieee.org/document/10623395"
   type: "Journal"     # ✅ 可为 "Journal" 或 "Conference"
@@ -29,3 +31,31 @@
     - Dong In Kim
     - Xuemin Shen
     - Khaled B Letaief
+
+- title: "The Role of Generative Artificial Intelligence in Internet of Electric Vehicles"
+  url: "https://ieeexplore.ieee.org/document/10778265"
+  type: "Journal"     # ✅ 可为 "Journal" 或 "Conference"
+  year: 2024
+  venue: "IEEE Internet of Things Journal"
+  short: "IoT"
+  authors:
+    - Hanwen Zhang
+    - Dusit Niyato
+    - Wei Zhang
+    - Changyuan Zhao
+    - Hongyang Du
+    - Abbas Jamalipour
+    - Sumei Sun
+    - Yiyang Pei
+    
+- title: "Inner approximating robust reach-avoid sets for discrete-time polynomial dynamical systems"
+  url: "https://ieeexplore.ieee.org/document/9910391"
+  type: "Journal"     # ✅ 可为 "Journal" 或 "Conference"
+  year: 2022
+  venue: "IEEE Transactions on Automatic Control"
+  short: "TAC"
+  authors:
+    - Changyuan Zhao
+    - Shuyuan Zhang
+    - Lei Wang
+    - Bai Xue
