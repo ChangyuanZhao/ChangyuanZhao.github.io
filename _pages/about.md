@@ -38,7 +38,7 @@ For more information, please visit our research group at NTU.
 
 
 # 🔥 News
-- *2025.03*: &nbsp;🎉🎉 One coauthored paper has been accepted by the IEEE Internet of Things Journal. Thanks Prof. Dusit and Prof. Geng Sun!
+- *2025.03*: &nbsp;🎉🎉 One co-authored paper has been accepted by the IEEE Internet of Things Journal. Thanks Prof. Dusit and Prof. Geng Sun!
 - *2025.03*: &nbsp;📖📖 I arrive in Suwon, South Korea, and will start the visit at Sungkyunkwan University, hosted by [Prof. Dong In Kim](https://scholar.google.com/citations?user=v2chr7kAAAAJ&hl=en).
 - *2024.12*: &nbsp;🎉🎉 One first-author paper has been accepted to the 39th Annual AAAI Conference on Artificial Intelligence — see you in Philadelphia, Pennsylvania, USA, next March!
 - *2024.11*: &nbsp;🎉🎉 One first-author paper has been accepted by the IEEE Wireless Communications. Thanks Prof. Dusit and Prof. Jiawen!
