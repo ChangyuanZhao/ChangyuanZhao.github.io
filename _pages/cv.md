@@ -8,10 +8,7 @@ author_profile: true
 
 <div id="travel-map" style="height: 0; width: 100%; margin: 20px 0; position: relative; z-index: 1; display: none;"></div>
 
-<div class="paper-box" style="margin-bottom: 1.2em; width: 100%; max-width: 90vw; margin-left: auto; margin-right: auto;">
-  <div class="paper-box-text" style="font-size: 0.95em; line-height: 1.5; width: 100%;">
-  </div>
-</div>
+
 
 
 # 📖 Educations
