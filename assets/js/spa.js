@@ -19,23 +19,27 @@ document.addEventListener("DOMContentLoaded", function () {
         const newContent = doc.querySelector("#main-content");
   
         if (newContent && mainContent) {
-          mainContent.innerHTML = newContent.innerHTML;
-          document.title = doc.title;
-  
-          if (updateHistory) {
-            history.pushState(null, "", fullUrl);
+            mainContent.innerHTML = newContent.innerHTML;
+            document.title = doc.title;
+          
+            if (updateHistory) {
+              history.pushState(null, "", fullUrl);
+            }
+          
+            // 💡 添加这句：重新加载 citation
+            if (typeof window.loadCitation === "function") {
+              window.loadCitation();
+            }
+          
+            if (hash) {
+              setTimeout(() => {
+                const target = document.getElementById(hash);
+                if (target) {
+                  target.scrollIntoView({ behavior: "smooth" });
+                }
+              }, 50);
+            }
           }
-  
-          // 💡 添加延迟滚动到锚点
-          if (hash) {
-            setTimeout(() => {
-              const target = document.getElementById(hash);
-              if (target) {
-                target.scrollIntoView({ behavior: "smooth" });
-              }
-            }, 50);
-          }
-        }
       })
       .catch(err => {
         console.error("SPA load error:", err);
