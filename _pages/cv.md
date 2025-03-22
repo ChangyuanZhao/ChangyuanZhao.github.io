@@ -8,15 +8,15 @@ author_profile: true
 
 
 # 📖 Educations
-- Nanyang Technological University, Singapore  
+- *Nanyang Technological University, Singapore*  
 **Ph.D., Aug 2023 – Present**  
 ◦ Supervised by Prof. Dusit Niyato
 
-- University of Chinese Academy of Sciences, Institute of Software, China
+- *University of Chinese Academy of Sciences, Institute of Software, China* <br/>
 **M.Eng., Sept. 2020 – Jun. 2023**  
 ◦ Supervised by Prof. Bai Xue
 
-- University of Science and Technology of China, China
+- *University of Science and Technology of China, China* <br/>
 **B.Sc., Sept. 2016 – Jun. 2020**  
 ◦ Supervised by Prof. Bai Xue
 
