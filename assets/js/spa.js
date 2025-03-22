@@ -100,6 +100,32 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   
   /**
+   * 修复侧边栏高度问题
+   */
+  function fixSidebarHeight() {
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('#main-content');
+    const mainArea = document.querySelector('#main');
+    
+    if (sidebar && mainContent) {
+      // 重置侧边栏样式以避免累积的高度问题
+      sidebar.style.height = 'auto';
+      sidebar.style.minHeight = '';
+      
+      // 获取内容区域的高度
+      const contentHeight = mainContent.offsetHeight;
+      const sidebarHeight = sidebar.offsetHeight;
+      
+      // 确保侧边栏高度至少与内容区域相同
+      if (contentHeight > sidebarHeight) {
+        sidebar.style.minHeight = contentHeight + 'px';
+      }
+      
+      console.log("修复侧边栏高度: 内容高度=", contentHeight, "侧边栏高度=", sidebarHeight);
+    }
+  }
+  
+  /**
    * 初始化动态加载的元素
    */
   function initDynamicElements() {
@@ -152,6 +178,9 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("SPA: 检测到旅行地图，尝试初始化");
       setTimeout(window.initTravelMap, 100);
     }
+    
+    // 修复侧边栏高度问题
+    setTimeout(fixSidebarHeight, 300);
   }
   
   /**
@@ -281,6 +310,11 @@ document.addEventListener("DOMContentLoaded", function () {
       display: block;
     }
     
+    /* 修复侧边栏高度问题 */
+    .sidebar {
+      transition: min-height 0.3s ease;
+    }
+    
     /* 错误提示样式 */
     .notice--danger {
       padding: 1.5em;
@@ -299,6 +333,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const mapContainer = document.getElementById('travel-map');
     if (!mapContainer) {
       console.log("地图容器不存在，跳过初始化");
+      return;
+    }
+    
+    // 确保Leaflet库已加载
+    if (typeof L === 'undefined') {
+      console.error("Leaflet库未加载，无法初始化地图");
       return;
     }
     
@@ -336,12 +376,18 @@ document.addEventListener("DOMContentLoaded", function () {
     // 检查是否有全局数据对象
     if (window.siteData && window.siteData.travelCities) {
       travelData = window.siteData.travelCities;
+      console.log("从全局变量加载旅行数据:", travelData.length, "个城市");
     } else {
       console.warn("找不到旅行数据，地图将不显示标记点");
     }
     
     // 处理旅行数据并添加标记
     travelData.forEach(entry => {
+      if (!entry.visits || !Array.isArray(entry.visits)) {
+        console.error("城市数据格式错误:", entry);
+        return;
+      }
+      
       const totalVisits = entry.visits.length;
       const recentVisits = entry.visits.slice(0, Math.min(5, totalVisits)).reverse();
       
@@ -371,19 +417,58 @@ document.addEventListener("DOMContentLoaded", function () {
       }).bindPopup(popupContent).addTo(map);
     });
     
-    // 更新统计数字
+    // 更新统计数字 - 增强版
+    const totalCitiesElement = document.getElementById('total-cities');
+    const totalVisitsElement = document.getElementById('total-visits');
+    
     if (travelData.length > 0) {
-      document.getElementById('total-cities').textContent = travelData.length;
+      // 城市总数
+      if (totalCitiesElement) {
+        totalCitiesElement.textContent = travelData.length;
+        console.log("更新城市总数:", travelData.length);
+      } else {
+        console.error("找不到 'total-cities' 元素");
+      }
+      
+      // 访问总次数
       let totalVisits = 0;
       travelData.forEach(entry => {
-        totalVisits += entry.visits.length;
+        if (entry.visits && Array.isArray(entry.visits)) {
+          totalVisits += entry.visits.length;
+        }
       });
-      document.getElementById('total-visits').textContent = totalVisits;
+      
+      if (totalVisitsElement) {
+        totalVisitsElement.textContent = totalVisits;
+        console.log("更新访问总次数:", totalVisits);
+      } else {
+        console.error("找不到 'total-visits' 元素");
+      }
+    } else {
+      console.warn("无旅行数据，无法更新统计数字");
     }
     
     // 强制刷新地图布局
     setTimeout(function() {
-      map.invalidateSize();
+      if (map) {
+        map.invalidateSize();
+        console.log("刷新地图布局");
+      }
     }, 100);
+    
+    // 触发侧边栏修复
+    setTimeout(fixSidebarHeight, 200);
   };
+  
+  // 初始页面加载时修复侧边栏高度
+  setTimeout(fixSidebarHeight, 500);
+  
+  // 监听窗口大小变化，随时修复侧边栏高度
+  window.addEventListener('resize', function() {
+    fixSidebarHeight();
+    // 同时刷新地图布局
+    if (window.travelMap) {
+      window.travelMap.invalidateSize();
+    }
+  });
 });
