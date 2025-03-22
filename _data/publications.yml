@@ -24,4 +24,15 @@
     - Second Author
     - Third Author
 
+- title: "Cross-Modal 1231Generative Semantic Communications for Mobile AIGC"
+  url: "https://doi.org/10.1109/TMC.2024.1234567"
+  code: "https://github.com/your/code-repo"   # ← 添加 code 字段（可选）
+  year: 2024
+  venue: "IEEE Transactions on Mobile Computing"
+  short: "TMC"
+  authors:
+    - Yinqiu Liu
+    - Hongyang Du
+    - Dusit Niyato
+    - ...
 
