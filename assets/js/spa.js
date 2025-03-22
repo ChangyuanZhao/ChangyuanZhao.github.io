@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // 定义关键变量
   const isMobile = window.innerWidth < 768;
   const currentPath = window.location.pathname;
+  const mainContent = document.querySelector(".page__content");
   
   // 设置主页背景为白色
   document.body.style.backgroundColor = "#ffffff";
@@ -41,12 +42,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // 应用样式一致性
     ensureConsistentStyle();
     
+    // 初始化内容 - 关键修复：确保子页面也能初始化内容
+    if (mainContent) {
+      initContent();
+    }
+    
     // 子页面使用传统导航，不启用SPA
     return;
   }
-  
-  // 从这里开始是SPA的实现，仅在主页中启用
-  const mainContent = document.querySelector(".page__content");
   
   // 没有主内容区域则退出
   if (!mainContent) {
