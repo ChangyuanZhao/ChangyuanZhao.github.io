@@ -1,6 +1,7 @@
 name: Get Citation Data
 
 on: 
+ workflow_dispatch:  # ✅ 添加这一行，允许你手动触发
  page_build: 
  schedule:
   - cron:  '0 8 * * *'
