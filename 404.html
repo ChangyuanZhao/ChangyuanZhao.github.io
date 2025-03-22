@@ -1,22 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Redirecting...</title>
-  <script>
-    (function () {
-      // 获取当前路径，比如 /cv/ 或 /projects/
-      const path = window.location.pathname;
+---
+layout: default
+permalink: /404.html
+---
 
-      // 构造 hash 路由，例如 "/#/cv/"
-      const newUrl = '/' + '#' + path;
+<div class="notice--danger">
+  <h2>404 - 页面未找到</h2>
+  <p>您请求的页面不存在或已被移动。</p>
+  <p><a href="/" id="go-home">返回主页</a></p>
+</div>
 
-      // 跳转到首页，并保留当前路径信息
-      window.location.replace(newUrl);
-    })();
-  </script>
-</head>
-<body>
-  <p>Redirecting...</p>
-</body>
-</html>
+<script>
+  // 保存用户尝试访问的路径
+  sessionStorage.setItem('redirectedFrom', window.location.pathname);
+  
+  // 添加主页链接的点击事件，使用 SPA 导航
+  document.getElementById('go-home').addEventListener('click', function(e) {
+    e.preventDefault();
+    window.location.href = '/';
+  });
+</script>
