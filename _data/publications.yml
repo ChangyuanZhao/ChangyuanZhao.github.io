@@ -80,3 +80,15 @@
     - Hongyang Du
     - Guangyuan Liu
     - Dusit Niyato
+
+- title: "A Geometrical Characterization on Feature Density of Image Datasets"
+  type: "Conference"     # ✅ 可为 "Journal" 或 "Conference"
+  year: 2023
+  venue: "2023 IEEE International Conference on Multimedia and Expo"
+  short: "ICME"
+  authors:
+    - Zhen Liang
+    - Changyuan Zhao
+    - Wanwei Liu
+    - Bai Xue
+    - Wenjing Yang
