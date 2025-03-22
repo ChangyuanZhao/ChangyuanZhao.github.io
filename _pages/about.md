@@ -49,7 +49,6 @@ For more information, please visit our research group at NTU.
 
 <p class="map-stats">Since 2025, I have visited <span id="total-cities">0</span> cities with a total of <span id="total-visits">0</span> travel experiences.</p>
 
-
 <style>
   #travel-map {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -185,11 +184,6 @@ For more information, please visit our research group at NTU.
     document.getElementById('total-visits').textContent = totalVisits;
     
     // 强制刷新地图布局
-    setTimeout(function() {
-      map.invalidateSize();
-    }, 100);
-  };
-</script>
     setTimeout(function() {
       map.invalidateSize();
     }, 100);
