@@ -47,6 +47,101 @@ For more information, please visit our research group at NTU.
 
 <div id="travel-map" style="height: 400px; border-radius: 8px; margin: 20px 0;"></div>
 
+
+
+<!-- Leaflet 地图库 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // 初始化地图
+    const map = L.map('travel-map').setView([30, 105], 2);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 10,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+  });
+</script>
+
+// 旅行数据
+    const travelData = [
+      {
+        "city": "北京",
+        "lat": 39.9042,
+        "lon": 116.4074,
+        "visits": ["2023-12-15", "2023-10-01", "2023-07-20", "2022-05-10", "2022-01-25"]
+      },
+      {
+        "city": "上海",
+        "lat": 31.2304,
+        "lon": 121.4737,
+        "visits": ["2024-01-05", "2023-09-10", "2023-04-15"]
+      },
+      {
+        "city": "东京",
+        "lat": 35.6762,
+        "lon": 139.6503,
+        "visits": ["2023-08-12", "2022-11-30", "2022-03-15", "2021-07-20"]
+      },
+      {
+        "city": "新加坡",
+        "lat": 1.3521,
+        "lon": 103.8198,
+        "visits": ["2024-02-10", "2023-11-20", "2023-06-15"]
+      }
+    ];
+    
+    // 处理旅行数据并添加标记
+    travelData.forEach(entry => {
+      const totalVisits = entry.visits.length;
+      const recentVisits = entry.visits.slice(0, Math.min(5, totalVisits)).reverse();
+      
+      const popupContent = `
+        <strong>${entry.city}</strong><br/>
+        🧭 出行次数：${totalVisits}<br/>
+        🕒 最近 ${recentVisits.length} 次：<br/>
+        <ul style="padding-left: 16px; margin: 5px 0;">
+          ${recentVisits.map(date => `<li>${date}</li>`).join("")}
+        </ul>
+      `;
+      
+      // 根据访问次数调整圆点大小
+      const radius = 5 + totalVisits * 2;
+      
+      L.circleMarker([entry.lat, entry.lon], {
+        radius: radius,
+        fillColor: "#d62728",
+        color: "#b22222",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.7
+      }).bindPopup(popupContent).addTo(map);
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div id="map" style="height: 600px; border-radius: 12px;"></div>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
