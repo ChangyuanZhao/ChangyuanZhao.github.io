@@ -279,6 +279,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // 添加样式
   const style = document.createElement("style");
   style.textContent = `
+    html {
+      overflow-y: scroll;
+    }
     .is-loading {
       cursor: wait;
     }
