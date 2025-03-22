@@ -23,7 +23,7 @@ baidu_site_verification  :  # get baidu_site_verification from https://ziyuan.ba
 author:
   name             : "Changyuan Zhao"
   avatar           : "images/android-chrome-512x512.png"
-  bio              : "College of Computing and Data Science, Nanyang Technological University"
+  bio              : "College of Computing and Data Science, \n Nanyang Technological University"
   location         : "Singapore"
   employer         :
   pubmed           : 
@@ -37,7 +37,7 @@ author:
   flickr           :
   facebook         :
   foursquare       :
-  github           : # e.g., "github username"
+  github           : "ChangyuanZhao"
   google_plus      :
   keybase          :
   instagram        :
