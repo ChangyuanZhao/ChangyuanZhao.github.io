@@ -279,9 +279,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // 添加样式
   const style = document.createElement("style");
   style.textContent = `
-    html {
-      overflow-y: scroll;
-    }
     .is-loading {
       cursor: wait;
     }
@@ -381,7 +378,67 @@ document.addEventListener("DOMContentLoaded", function () {
       travelData = window.siteData.travelCities;
       console.log("从全局变量加载旅行数据:", travelData.length, "个城市");
     } else {
-      console.warn("找不到旅行数据，地图将不显示标记点");
+      console.warn("找不到全局旅行数据，使用内置备用数据");
+      
+      // 内置备用数据 - 当全局数据不可用时使用
+      travelData = [
+        {
+          "city": "Beijing",
+          "lat": 39.9042,
+          "lon": 116.4074,
+          "visits": ["2025-02-28"]
+        },
+        {
+          "city": "Dalian",
+          "lat": 38.9140,
+          "lon": 121.6147,
+          "visits": ["2025-03-02"]
+        },
+        {
+          "city": "Suwon",
+          "lat": 37.2636,
+          "lon": 127.0286,
+          "visits": ["2025-03-04"]
+        },
+        {
+          "city": "Seoul",
+          "lat": 37.5665,
+          "lon": 126.9780,
+          "visits": ["2025-03-09"]
+        },
+        {
+          "city": "Singapore",
+          "lat": 1.3521,
+          "lon": 103.8198,
+          "visits": ["2025-03-14", "2025-01-10", "2024-12-20"]
+        },
+        {
+          "city": "Johor Bahru",
+          "lat": 1.4927,
+          "lon": 103.7414,
+          "visits": ["2025-01-29"]
+        },
+        {
+          "city": "Hong Kong",
+          "lat": 22.3193,
+          "lon": 114.1694,
+          "visits": ["2024-12-16"]
+        },
+        {
+          "city": "Bangkok",
+          "lat": 13.7563,
+          "lon": 100.5018,
+          "visits": ["2024-12-26"]
+        },
+        {
+          "city": "Xi'an",
+          "lat": 34.3416,
+          "lon": 108.9398,
+          "visits": ["2024-12-29"]
+        }
+      ];
+      
+      console.log("已加载内置备用数据:", travelData.length, "个城市");
     }
     
     // 处理旅行数据并添加标记
