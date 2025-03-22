@@ -4,7 +4,6 @@ permalink: /teaching/
 layout: page
 excerpt: ""
 author_profile: true
-classes: wide
 ---
 
 
