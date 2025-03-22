@@ -1,7 +1,7 @@
 ---
 title: "Changyuan's CV"
 permalink: /cv/
-layout: page  
+layout: default 
 excerpt: ""
 author_profile: true
 ---
