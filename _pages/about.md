@@ -120,33 +120,8 @@ For more information, please visit our research group at NTU.
       }).addTo(map);
     }
     
-    // 旅行数据
-    const travelData = [
-      {
-        "city": "北京",
-        "lat": 39.9042,
-        "lon": 116.4074,
-        "visits": ["2023-12-15", "2023-10-01", "2023-07-20", "2022-05-10", "2022-01-25"]
-      },
-      {
-        "city": "上海",
-        "lat": 31.2304,
-        "lon": 121.4737,
-        "visits": ["2024-01-05", "2023-09-10", "2023-04-15"]
-      },
-      {
-        "city": "东京",
-        "lat": 35.6762,
-        "lon": 139.6503,
-        "visits": ["2023-08-12", "2022-11-30", "2022-03-15", "2021-07-20"]
-      },
-      {
-        "city": "新加坡",
-        "lat": 1.3521,
-        "lon": 103.8198,
-        "visits": ["2024-02-10", "2023-11-20", "2023-06-15"]
-      }
-    ];
+    // 使用 Jekyll 从 YAML 文件中获取旅行数据
+    const travelData = {{ site.data.travel.cities | jsonify }};
     
     // 处理旅行数据并添加标记
     travelData.forEach(entry => {
