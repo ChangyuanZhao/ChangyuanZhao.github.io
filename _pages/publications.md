@@ -1,7 +1,7 @@
 ---
 title: "Publications"
 permalink: /publications/
-layout: page  
+layout: default  
 excerpt: ""
 author_profile: true
 ---
