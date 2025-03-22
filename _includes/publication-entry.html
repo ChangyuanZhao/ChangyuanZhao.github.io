@@ -1,18 +1,19 @@
+<!-- Mobile-optimized paper box layout -->
 <div class="paper-box" style="margin-bottom: 1.2em; width: 100%; max-width: 90vw; margin-left: auto; margin-right: auto;">
   <div class="paper-box-text" style="font-size: 0.95em; line-height: 1.5; width: 100%;">
     
-    <!-- Title + Badge -->
-    <div style="margin-top: 0.4em; font-weight: 600; display: flex; align-items: center; gap: 0.5em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-      <span style="background-color: #00369f; color: white; width: 4em; text-align: center; padding: 0.2em 0.3em; border-radius: 4px; font-weight: 600; font-size: 0.75em; flex-shrink: 0;">
+    <!-- Title + Badge - Modified for better mobile handling -->
+    <div style="margin-top: 0.4em; font-weight: 600; display: flex; align-items: flex-start; gap: 0.5em;">
+      <span style="background-color: #00369f; color: white; min-width: 4em; text-align: center; padding: 0.2em 0.3em; border-radius: 4px; font-weight: 600; font-size: 0.75em; flex-shrink: 0;">
         {{ include.pub.short }}
       </span>
-      <a href="{{ include.pub.url }}" target="_blank" style="text-decoration: none; color: inherit;">
+      <a href="{{ include.pub.url }}" target="_blank" style="text-decoration: none; color: inherit; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">
         {{ include.pub.title }}
       </a>
     </div>
-
+    
     <!-- Authors -->
-    <div style="margin-top: 0.3em;">
+    <div style="margin-top: 0.3em; word-wrap: break-word; overflow-wrap: break-word;">
       {% assign display_limit = 7 %}
       {% assign total = include.pub.authors | size %}
       {% for author in include.pub.authors limit: display_limit %}
@@ -22,9 +23,9 @@
         and <span style="color: gray;">{{ total | minus: display_limit }} more</span>
       {% endif %}
     </div>
-
+    
     <!-- Venue + Year + Code -->
-    <div style="margin-top: 0.2em; font-style: italic; color: #444;">
+    <div style="margin-top: 0.2em; font-style: italic; color: #444; word-wrap: break-word; overflow-wrap: break-word;">
       <em>{{ include.pub.venue }}</em>, {{ include.pub.year }}
       {% if include.pub.code %}
         · <span style="font-style: normal;">🔗 <a href="{{ include.pub.code }}" target="_blank" style="color: #00369f; text-decoration: none;">[Code]</a></span>
