@@ -1,34 +1,54 @@
 /**
  * acad-homepage SPA 实现
- * 全平台兼容版
+ * 全平台兼容版 - 修复子页面刷新和移动端布局问题
  */
 document.addEventListener("DOMContentLoaded", function () {
   console.log("SPA框架初始化...");
   
-  // 精确定位内容区域和包含框架
-  const contentWrap = document.querySelector(".page__inner-wrap");
+  // 主内容区域
   const mainContent = document.querySelector(".page__content");
+  const pageInnerWrap = document.querySelector(".page__inner-wrap");
+  const mainElement = document.querySelector("#main");
   
-  if (!mainContent || !contentWrap) {
-    console.error("无法找到必要的DOM元素，禁用SPA");
+  if (!mainContent) {
+    console.error("无法找到主内容区域，禁用SPA");
     return;
   }
   
-  // 记录初始HTML结构
-  const initialContentHTML = contentWrap.innerHTML;
+  // 专门为子页面刷新准备的恢复逻辑
+  const currentPath = window.location.pathname;
+  
+  // 检查是否需要特殊处理子页面刷新
+  if (currentPath !== "/" && !window.location.pathname.endsWith("/index.html")) {
+    // 尝试检测是否为子页面直接访问
+    const isMissingLayout = !document.querySelector(".masthead") || 
+                           !document.querySelector(".sidebar") ||
+                           !document.querySelector("footer");
+    
+    if (isMissingLayout) {
+      console.log("检测到子页面直接访问，重定向到主页");
+      // 如果子页面刷新后没有完整布局，重定向到主页并记录原始请求的路径
+      localStorage.setItem("redirectTarget", window.location.pathname + window.location.hash);
+      window.location.href = "/";
+      return; // 停止执行其余代码
+    }
+  }
+  
+  // 检查是否需要从主页重定向到子页面
+  const redirectTarget = localStorage.getItem("redirectTarget");
+  if (redirectTarget) {
+    console.log("检测到从主页重定向请求，目标:", redirectTarget);
+    // 清除重定向标记
+    localStorage.removeItem("redirectTarget");
+    // 延迟执行，确保主页完全加载
+    setTimeout(() => {
+      console.log("执行重定向到:", redirectTarget);
+      loadPage(redirectTarget, true);
+    }, 500);
+  }
   
   // 已处理链接的标记
   const HANDLED_ATTR = "data-spa-handled";
-  
-  // 防抖函数，用于避免多次快速调用
-  function debounce(func, wait) {
-    let timeout;
-    return function() {
-      const context = this, args = arguments;
-      clearTimeout(timeout);
-      timeout = setTimeout(() => func.apply(context, args), wait);
-    };
-  }
   
   /**
    * 加载页面内容
@@ -57,29 +77,20 @@ document.addEventListener("DOMContentLoaded", function () {
         const doc = parser.parseFromString(html, "text/html");
         
         // 查找新页面内容区域
-        const newContentWrap = doc.querySelector(".page__inner-wrap");
         const newContent = doc.querySelector(".page__content");
         const newTitle = doc.querySelector("title")?.textContent || "";
         
-        // 仅更新内容区域，保持框架结构
         if (newContent) {
-          // 记录滚动位置和内容区域尺寸
-          const scrollPos = window.scrollY;
-          const contentWidth = contentWrap.offsetWidth;
-          
           // 更新页面标题
           document.title = newTitle;
           
-          // 更新内容区域 - 可以选择更新整个包装器或仅内容
+          // 更新内容
           mainContent.innerHTML = newContent.innerHTML;
           
           // 更新浏览器历史
           if (updateHistory) {
             history.pushState({ url: url }, newTitle, url);
           }
-          
-          // 防止布局偏移
-          document.body.style.width = contentWidth + 'px';
           
           // 初始化新内容
           initDynamicElements();
@@ -88,12 +99,17 @@ document.addEventListener("DOMContentLoaded", function () {
           attachLinkHandlers();
           
           // 处理锚点滚动
-          handleScrolling(hash);
-          
-          // 恢复正常布局
-          setTimeout(() => {
-            document.body.style.width = '';
-          }, 100);
+          if (hash) {
+            setTimeout(() => {
+              const target = document.getElementById(hash);
+              if (target) {
+                target.scrollIntoView({ behavior: "smooth" });
+              }
+            }, 100);
+          } else {
+            // 回到顶部
+            window.scrollTo(0, 0);
+          }
         } else {
           // 如果找不到内容区域，回退到传统导航
           window.location.href = url;
@@ -101,35 +117,13 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .catch(error => {
         console.error("SPA加载错误:", error);
-        // 尝试恢复先前的内容
-        contentWrap.innerHTML = initialContentHTML;
-        // 然后回退到传统导航
+        // 回退到传统导航
         window.location.href = url;
       })
       .finally(() => {
         // 移除加载状态
         document.body.classList.remove("is-loading");
       });
-  }
-  
-  /**
-   * 处理滚动逻辑
-   */
-  function handleScrolling(hash) {
-    if (hash) {
-      setTimeout(() => {
-        const target = document.getElementById(hash);
-        if (target) {
-          // 使用平滑滚动
-          target.scrollIntoView({ behavior: "smooth" });
-        }
-      }, 200);
-    } else {
-      // 回到顶部，使用延迟确保DOM渲染完成
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }, 100);
-    }
   }
   
   /**
@@ -176,44 +170,58 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
     
-    // 更新布局修复
-    fixLayout();
+    // 修复移动端布局
+    fixMobileLayout();
   }
   
   /**
-   * 修复可能的布局问题
+   * 修复移动端布局问题
    */
-  function fixLayout() {
-    // 修复侧边栏和内容高度
-    const sidebar = document.querySelector('.sidebar');
-    if (sidebar && mainContent) {
-      const contentHeight = mainContent.offsetHeight;
-      const sidebarHeight = sidebar.offsetHeight;
-      
-      if (contentHeight > sidebarHeight) {
-        sidebar.style.minHeight = contentHeight + 'px';
-      }
-    }
+  function fixMobileLayout() {
+    // 检测是否为移动设备
+    const isMobile = window.innerWidth < 768;
     
-    // 处理移动端特定问题
-    if (window.innerWidth < 768) {
-      // 确保移动端下的侧边栏样式正确
-      const sidebarElements = document.querySelectorAll('.sidebar, .sidebar__right');
-      sidebarElements.forEach(el => {
-        if (el) {
-          el.style.float = 'none';
-          el.style.width = '100%';
-          el.style.marginLeft = '0';
-          el.style.marginRight = '0';
+    if (isMobile) {
+      console.log("应用移动端布局修复");
+      
+      // 移除页面顶部和内容之间的空白
+      const sidebar = document.querySelector('.sidebar');
+      const authorSidebar = document.querySelector('.author__sidebar');
+      const authorAvatar = document.querySelector('.author__avatar');
+      
+      // 调整作者区域样式
+      if (authorSidebar) {
+        authorSidebar.style.margin = '0';
+        authorSidebar.style.padding = '0';
+      }
+      
+      // 调整头像
+      if (authorAvatar) {
+        authorAvatar.style.display = 'block';
+        authorAvatar.style.margin = '0 auto 0.5em';
+        authorAvatar.style.textAlign = 'center';
+      }
+      
+      // 调整侧边栏
+      if (sidebar) {
+        // 修正空白问题
+        sidebar.style.marginTop = '0';
+        sidebar.style.paddingTop = '0';
+        sidebar.style.marginBottom = '1em';
+      }
+      
+      // 调整内容区域与侧边栏之间的间距
+      if (pageInnerWrap) {
+        pageInnerWrap.style.marginTop = '0.5em';
+      }
+      
+      // 确保没有多余空白
+      document.querySelectorAll('.initial-content > .page').forEach(page => {
+        if (page) {
+          page.style.marginTop = '0';
+          page.style.paddingTop = '0';
         }
       });
-      
-      // 修复作者头像在移动端的显示
-      const avatar = document.querySelector('.author__avatar');
-      if (avatar) {
-        avatar.style.display = 'block';
-        avatar.style.margin = '0 auto 1em';
-      }
     }
   }
   
@@ -245,62 +253,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // 添加点击事件
         link.addEventListener("click", function(e) {
           e.preventDefault();
-          // 使用防抖确保不会多次快速触发
-          debounce(loadPage, 100)(href);
+          loadPage(href);
         });
       }
     });
-  }
-  
-  /**
-   * 添加样式
-   */
-  function addStyles() {
-    const style = document.createElement("style");
-    style.textContent = `
-      .is-loading {
-        cursor: wait;
-      }
-      
-      .is-loading .page__content {
-        opacity: 0.6;
-        transition: opacity 0.3s;
-      }
-      
-      .page__content {
-        transition: opacity 0.3s;
-      }
-      
-      /* 防止布局偏移 */
-      body {
-        overflow-x: hidden !important;
-        max-width: 100% !important;
-        position: relative !important;
-      }
-      
-      .page__content, 
-      .page__inner-wrap {
-        overflow-x: visible !important;
-        box-sizing: border-box !important;
-      }
-      
-      /* 移动端特定样式 */
-      @media (max-width: 767px) {
-        .sidebar,
-        .sidebar__right {
-          float: none !important;
-          width: 100% !important;
-          margin-left: 0 !important;
-          margin-right: 0 !important;
-        }
-        
-        .author__avatar {
-          display: block !important;
-          margin: 0 auto 1em !important;
-        }
-      }
-    `;
-    document.head.appendChild(style);
   }
   
   /**
@@ -316,30 +272,81 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   
   /**
-   * 窗口大小改变时修复布局
+   * 添加样式修复
    */
-  window.addEventListener('resize', debounce(function() {
-    console.log("窗口大小变化，修复布局");
-    fixLayout();
+  function addStyles() {
+    const style = document.createElement("style");
+    style.textContent = `
+      .is-loading .page__content {
+        opacity: 0.6;
+        transition: opacity 0.3s;
+      }
+      
+      .page__content {
+        transition: opacity 0.3s;
+      }
+      
+      /* 防止布局偏移 */
+      body {
+        overflow-x: hidden !important;
+        max-width: 100% !important;
+      }
+      
+      /* 移动端特定样式 */
+      @media (max-width: 767px) {
+        /* 修复空白问题 */
+        .sidebar, .author__sidebar {
+          margin-top: 0 !important;
+          padding-top: 0 !important; 
+          margin-bottom: 1em !important;
+        }
+        
+        .author__avatar {
+          display: block !important;
+          margin: 0 auto 0.5em !important;
+          text-align: center !important;
+        }
+        
+        .page {
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+        }
+        
+        .page__inner-wrap {
+          margin-top: 0.5em !important;
+        }
+        
+        /* 修复内容区域 */
+        .page__content {
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  // 初始化SPA
+  addStyles();
+  attachLinkHandlers();
+  fixMobileLayout();
+  
+  // 设置初始历史状态
+  history.replaceState({ url: window.location.pathname + window.location.hash }, document.title, window.location.pathname + window.location.hash);
+  
+  // 监听窗口大小变化
+  window.addEventListener('resize', function() {
+    fixMobileLayout();
     
     // 刷新地图
     if (window.travelMap) {
       window.travelMap.invalidateSize();
     }
-  }, 200));
-  
-  // 初始化SPA
-  addStyles();
-  attachLinkHandlers();
-  fixLayout();
-  
-  // 设置初始历史状态
-  const currentPath = window.location.pathname + window.location.hash;
-  history.replaceState({ url: currentPath }, document.title, currentPath);
+  });
   
   console.log("SPA框架初始化完成");
 
-  // 定义全局旅行地图初始化函数，确保能在内容更新后被调用
+  // 定义全局旅行地图初始化函数
   window.initTravelMap = function() {
     console.log("初始化旅行地图");
     
