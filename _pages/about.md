@@ -176,95 +176,47 @@ For more information, please visit our research group at NTU.
 
 
 
-
-
-
-
-
-
-
-
-
-
-<div id="map" style="height: 600px; border-radius: 12px;"></div>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+// 将这段代码添加到页面最底部
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const map = L.map('map').setView([20, 0], 2);  // 世界地图居中视角
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 8,
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    // 异步加载 travel 数据
-    fetch('/assets/data/travel.json')
-      .then(response => response.json())
-      .then(data => {
-        data.forEach(entry => {
-          const totalVisits = entry.visits.length;
-          const recentVisits = entry.visits.slice(-5).reverse();
-
-          const popupContent = `
-            <strong>${entry.city}</strong><br/>
-            🧭 出行次数：${totalVisits}<br/>
-            🕒 最近 5 次：<br/>
-            <ul style="padding-left: 16px;">
-              ${recentVisits.map(date => `<li>${date}</li>`).join("")}
-            </ul>
-          `;
-
-          const radius = 5 + totalVisits * 3;
-
-          L.circleMarker([entry.lat, entry.lon], {
-            radius: radius,
-            fillColor: "#d62728",
-            color: "#b22222",
-            weight: 1,
-            opacity: 1,
-            fillOpacity: 0.7
-          }).bindPopup(popupContent).addTo(map);
-        });
-      })
-      .catch(error => {
-        console.error("加载出行数据失败：", error);
-      });
-  });
+  window.onload = function() {
+    // 初始化地图
+    const map = L.map('travel-map').setView([30, 105], 2);
+    
+    // 尝试多个瓦片源，增加可靠性
+    try {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 10,
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+    } catch (e) {
+      console.error("主要瓦片源加载失败，尝试备用源", e);
+      
+      // 备用瓦片源
+      L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
+        maxZoom: 10,
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+    }
+    
+    // 旅行数据
+    const travelData = [
+      {
+        "city": "北京",
+        "lat": 39.9042,
+        "lon": 116.4074,
+        "visits": ["2023-12-15", "2023-10-01", "2023-07-20", "2022-05-10", "2022-01-25"]
+      },
+      // 其他城市数据...
+    ];
+    
+    // 添加标记
+    travelData.forEach(entry => {
+      // 处理每个城市的代码...
+    });
+    
+    // 强制刷新地图布局
+    setTimeout(function() {
+      map.invalidateSize();
+    }, 100);
+  };
 </script>
-
-
-
-
-# 📝 Publications 
-
-<div class='paper-box'><div class='paper-box-image'><div><div class="badge">CVPR 2016</div><img src='images/500x300.png' alt="sym" width="100%"></div></div>
-<div class='paper-box-text' markdown="1">
-
-[Deep Residual Learning for Image Recognition](https://openaccess.thecvf.com/content_cvpr_2016/papers/He_Deep_Residual_Learning_CVPR_2016_paper.pdf)
-
-**Kaiming He**, Xiangyu Zhang, Shaoqing Ren, Jian Sun
-
-[**Project**](https://scholar.google.com/citations?view_op=view_citation&hl=zh-CN&user=DhtAFkwAAAAJ&citation_for_view=DhtAFkwAAAAJ:ALROH1vI_8AC) <strong><span class='show_paper_citations' data='DhtAFkwAAAAJ:ALROH1vI_8AC'></span></strong>
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet ipsum, ac tempus justo dapibus sit amet. 
-</div>
-</div>
-
-- [Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet ipsum, ac tempus justo dapibus sit amet](https://github.com), A, B, C, **CVPR 2020**
-
-# 🎖 Honors and Awards
-- *2021.10* Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet ipsum, ac tempus justo dapibus sit amet. 
-- *2021.09* Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet ipsum, ac tempus justo dapibus sit amet. 
-
-# 📖 Educations
-- *2019.06 - 2022.04 (now)*, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet ipsum, ac tempus justo dapibus sit amet. 
-- *2015.09 - 2019.06*, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet ipsum, ac tempus justo dapibus sit amet. 
-
-# 💬 Invited Talks
-- *2021.06*, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet ipsum, ac tempus justo dapibus sit amet. 
-- *2021.03*, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ornare aliquet ipsum, ac tempus justo dapibus sit amet.  \| [\[video\]](https://github.com/)
-
-# 💻 Internships
-- *2019.05 - 2020.02*, [Lorem](https://github.com/), China.
