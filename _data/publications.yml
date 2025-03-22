@@ -1,4 +1,5 @@
 - title: "Cross-Modal Generative Semantic Communications for Mobile AIGC: Joint Semantic Encoding and Prompt Engineering"
+  url: "https://doi.org/10.1109/TMC.2024.1234567"   # ← 添加链接
   year: 2024
   venue: "IEEE Transactions on Mobile Computing"
   short: "TMC"
@@ -13,6 +14,7 @@
     - Another Author
     - Extra Author
 
+
 - title: "Another Paper Title"
   year: 2023
   venue: "IEEE Journal on Selected Areas in Communications"
@@ -21,3 +23,5 @@
     - First Author
     - Second Author
     - Third Author
+
+
