@@ -47,7 +47,8 @@ For more information, please visit our research group at NTU.
 
 <div id="travel-map" style="height: 400px; width: 100%; border-radius: 8px; margin: 20px 0; position: relative; z-index: 1;"></div>
 
-<p class="map-stats">截至目前共访问了 <span id="total-cities">0</span> 个城市，累计 <span id="total-visits">0</span> 次旅行体验。</p>
+<p class="map-stats">Since 2025, I have visited <span id="total-cities">0</span> cities with a total of <span id="total-visits">0</span> travel experiences.</p>
+
 
 <style>
   #travel-map {
