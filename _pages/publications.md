@@ -13,6 +13,7 @@ author_profile: true
 ## 📰 Journal & Magazine Papers
 
 
+<div id="travel-map" style="height: 0; width: 100%; margin: 20px 0; position: relative; z-index: 1; display: none;"></div>
 
 {% assign journals = site.data.publications | where: "type", "Journal" %}
 {% assign journals_sorted = journals | sort: "year" | reverse %}
