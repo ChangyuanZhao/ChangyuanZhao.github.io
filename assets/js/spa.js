@@ -1,123 +1,67 @@
 /**
  * acad-homepage SPA 实现
- * 专注于解决布局渲染和头像位置问题
+ * 支持子页面刷新并保持布局完整性
  */
 
-// 最优先执行的代码，在页面最早阶段就检测刷新情况
-(function() {
-  // 判断是否为子页面
-  const path = window.location.pathname;
-  if (path !== "/" && path !== "/index.html") {
-    // 立即隐藏整个页面以防闪烁
-    document.documentElement.style.opacity = "0";
-    document.documentElement.style.transition = "opacity 0.3s";
-    
-    // 标记为子页面刷新
-    sessionStorage.setItem("refreshSubpage", path);
-  }
-})();
+// 在页面加载前保存当前布局状态
+const savedPath = window.location.pathname;
+let needsRefresh = false;
 
-document.addEventListener("DOMContentLoaded", function() {
+// 检查是否有布局
+function checkLayout() {
+  // 检查关键布局元素是否存在
+  const hasHeader = document.querySelector("header");
+  const hasSidebar = document.querySelector(".sidebar, .author__avatar");
+  const hasFooter = document.querySelector("footer");
+  
+  return hasHeader && hasSidebar && hasFooter;
+}
+
+document.addEventListener("DOMContentLoaded", function () {
   // 主内容区域
   const mainContent = document.querySelector("#main-content");
   
   // 已处理链接的标记
   const HANDLED_ATTR = "data-spa-handled";
   
-  // 当前路径和是否为子页面刷新
-  const currentPath = window.location.pathname;
-  const refreshSubpage = sessionStorage.getItem("refreshSubpage");
-  
-  // ===== 区分刷新情况 =====
-  
-  // 情况1: 子页面刷新并且我们没有完整布局
-  if (currentPath !== "/" && refreshSubpage === currentPath) {
-    const hasFullLayout = hasCompleteSiteLayout();
-    
-    if (!hasFullLayout) {
-      console.log("检测到子页面刷新且布局不完整，重定向到主页");
-      // 清除子页面刷新标记
-      sessionStorage.removeItem("refreshSubpage");
-      // 设置重定向目标
-      sessionStorage.setItem("redirectTarget", currentPath);
-      // 重定向到主页以获取完整布局
-      window.location.replace("/");
-      return; // 停止执行
-    }
+  // 检查布局并处理子页面刷新
+  if (savedPath !== "/" && savedPath !== "/index.html") {
+    // 等待一段时间再检查布局
+    setTimeout(function() {
+      if (!checkLayout()) {
+        console.log("子页面缺少布局, 正在完整刷新页面");
+        // 标记为需要强制刷新
+        localStorage.setItem("forceReload", savedPath);
+        // 使用 location.href 跳转到自身，这会触发完整页面加载
+        window.location.href = savedPath;
+        return;
+      }
+    }, 100);
   }
   
-  // 情况2: 主页加载但有重定向目标
-  if ((currentPath === "/" || currentPath === "/index.html") && sessionStorage.getItem("redirectTarget")) {
-    const targetPage = sessionStorage.getItem("redirectTarget");
-    console.log("从主页重定向到:", targetPage);
-    
-    // 清除重定向标记
-    sessionStorage.removeItem("redirectTarget");
-    
-    // 加载完整站点布局后立即重定向到目标页面
-    // 使用 location.replace 而不是 loadPage 确保获得完整的布局
-    window.location.replace(targetPage);
-    return; // 停止执行
+  // 检查是否是强制刷新后的访问
+  const forceReload = localStorage.getItem("forceReload");
+  if (forceReload) {
+    // 清除标记
+    localStorage.removeItem("forceReload");
+    console.log("完成了强制刷新，页面应该有完整布局了");
   }
-  
-  // 允许页面显示（针对子页面刷新的情况）
-  document.documentElement.style.opacity = "1";
-  
-  /**
-   * 检查站点是否有完整布局
-   */
-  function hasCompleteSiteLayout() {
-    return Boolean(
-      document.querySelector("header") && 
-      document.querySelector("footer") && 
-      document.querySelector(".sidebar, .author__avatar")
-    );
-  }
-  
-  /**
-   * 设置当前页面类型
-   */
-  function setCurrentPageType(url) {
-    let pageType = "home";
-    
-    if (url.includes("/publications")) {
-      pageType = "publications";
-    } else if (url.includes("/cv")) {
-      pageType = "cv";
-    } else if (url.includes("/teaching")) {
-      pageType = "teaching";
-    } else if (url.includes("/portfolio")) {
-      pageType = "portfolio";
-    }
-    
-    document.body.setAttribute("data-current-page", pageType);
-  }
-  
-  // 设置初始页面类型
-  setCurrentPageType(currentPath);
   
   /**
    * 加载页面内容
    */
   function loadPage(url, updateHistory = true) {
-    // 标记为加载中
+    // 添加加载状态
     document.body.classList.add("is-loading");
-    
-    // 保存当前内容高度，减少布局跳动
-    const currentHeight = mainContent.offsetHeight;
-    mainContent.style.minHeight = `${currentHeight}px`;
     
     // 处理URL
     const cleanUrl = url.split("#")[0];
     const hash = url.includes("#") ? url.split("#")[1] : "";
     const requestUrl = cleanUrl.endsWith("/") ? cleanUrl : cleanUrl;
     
-    // 更新页面类型
-    setCurrentPageType(url);
-    
     console.log("SPA加载页面:", url);
     
-    // 发送请求获取内容
+    // 请求页面内容
     fetch(requestUrl)
       .then(response => {
         if (!response.ok) throw new Error(`页面加载失败: ${response.status}`);
@@ -132,22 +76,23 @@ document.addEventListener("DOMContentLoaded", function() {
         const newTitle = doc.querySelector("title")?.textContent || "";
         
         if (newContent && mainContent) {
-          // 创建过渡容器
+          // 使用平滑过渡效果
           const transitionContainer = document.createElement('div');
           transitionContainer.className = 'content-transition-enter';
           transitionContainer.innerHTML = newContent.innerHTML;
           
-          // 更新内容
+          // 清空并添加新内容
           mainContent.innerHTML = '';
           mainContent.appendChild(transitionContainer);
           
-          // 触发过渡
-          setTimeout(() => {
-            transitionContainer.classList.add('content-transition-enter-active');
-          }, 10);
+          // 强制重绘以启动过渡
+          transitionContainer.offsetHeight;
+          transitionContainer.classList.add('content-transition-enter-active');
           
-          // 更新标题和历史
+          // 更新页面标题
           document.title = newTitle;
+          
+          // 更新浏览器历史
           if (updateHistory) {
             history.pushState({ url: url }, newTitle, url);
           }
@@ -155,18 +100,15 @@ document.addEventListener("DOMContentLoaded", function() {
           // 初始化新内容
           setTimeout(() => {
             initDynamicElements();
-            fixSidebarAndImages();
             attachLinkHandlers();
-            
-            // 移除高度限制
-            setTimeout(() => {
-              mainContent.style.minHeight = '';
-            }, 200);
+            fixLayout();
             
             // 处理锚点滚动
             if (hash) {
-              const target = document.getElementById(hash);
-              if (target) target.scrollIntoView({ behavior: "smooth" });
+              setTimeout(() => {
+                const target = document.getElementById(hash);
+                if (target) target.scrollIntoView({ behavior: "smooth" });
+              }, 50);
             } else {
               window.scrollTo(0, 0);
             }
@@ -179,10 +121,9 @@ document.addEventListener("DOMContentLoaded", function() {
           <div class="notice--danger">
             <h4>加载错误</h4>
             <p>${error.message}</p>
-            <p>尝试<a href="${url}">重新加载</a></p>
+            <p>尝试<a href="${url}">重新加载</a>页面</p>
           </div>
         `;
-        mainContent.style.minHeight = '';
       })
       .finally(() => {
         document.body.classList.remove("is-loading");
@@ -190,20 +131,18 @@ document.addEventListener("DOMContentLoaded", function() {
   }
   
   /**
-   * 修复侧边栏和图片显示
+   * 修复布局问题
    */
-  function fixSidebarAndImages() {
-    // 处理头像
+  function fixLayout() {
+    // 修复头像和侧边栏
     const avatarContainer = document.querySelector('.author__avatar');
     if (avatarContainer) {
-      // 移除之前设置的样式
-      avatarContainer.style.height = '';
-      avatarContainer.style.width = '';
-      avatarContainer.style.position = 'relative';
+      avatarContainer.style.display = 'block';
+      avatarContainer.style.overflow = 'hidden';
+      avatarContainer.style.marginBottom = '1em';
       
       const avatarImg = avatarContainer.querySelector('img');
       if (avatarImg) {
-        // 确保头像图片显示正确
         avatarImg.style.maxWidth = '100%';
         avatarImg.style.height = 'auto';
         avatarImg.style.display = 'block';
@@ -213,45 +152,8 @@ document.addEventListener("DOMContentLoaded", function() {
     // 修复侧边栏
     const sidebar = document.querySelector('.sidebar');
     if (sidebar) {
-      sidebar.style.position = 'sticky';
-      sidebar.style.top = '2em';
-      sidebar.style.height = 'auto';
-      sidebar.style.maxHeight = 'calc(100vh - 4em)';
+      sidebar.style.display = 'block';
     }
-    
-    // 处理页面中的所有图片
-    document.querySelectorAll('img').forEach(img => {
-      // 确保所有图片都设置正确的样式
-      img.style.maxWidth = '100%';
-      img.style.height = 'auto';
-      
-      // 如果图片已加载，修复其尺寸
-      if (img.complete) {
-        img.style.display = 'block';
-      } else {
-        // 否则在加载后修复
-        img.onload = function() {
-          this.style.display = 'block';
-        };
-      }
-    });
-  }
-  
-  /**
-   * 预加载图片
-   */
-  function preloadImages() {
-    mainContent.querySelectorAll('img').forEach(img => {
-      // 设置默认占位尺寸
-      if (!img.width || !img.height) {
-        img.style.aspectRatio = img.naturalWidth && img.naturalHeight 
-          ? `${img.naturalWidth} / ${img.naturalHeight}` 
-          : '16 / 9';
-      }
-      
-      img.onload = function() { this.style.aspectRatio = ''; };
-      if (img.complete) img.style.aspectRatio = '';
-    });
   }
   
   /**
@@ -273,7 +175,6 @@ document.addEventListener("DOMContentLoaded", function() {
         newScript.setAttribute(attr.name, attr.value);
       });
       newScript.textContent = oldScript.textContent;
-      
       oldScript.parentNode?.replaceChild(newScript, oldScript);
     });
     
@@ -323,39 +224,24 @@ document.addEventListener("DOMContentLoaded", function() {
     loadPage(url, false);
   });
   
-  // 初始化历史状态
+  // 设置初始历史状态
+  const currentPath = window.location.pathname;
   history.replaceState({ url: currentPath }, document.title, currentPath);
   
   // 附加链接处理器
   attachLinkHandlers();
   
-  // 初始修复布局
-  fixSidebarAndImages();
+  // 修复初始布局
+  fixLayout();
   
   // 添加样式
   const style = document.createElement("style");
   style.textContent = `
-    /* 全局过渡 */
-    html {
-      scroll-behavior: smooth;
-      scrollbar-gutter: stable;
-    }
-    
     /* 加载状态 */
     body.is-loading { cursor: wait; }
-    body.is-loading #main-content { opacity: 0.7; }
+    body.is-loading #main-content { opacity: 0.7; transition: opacity 0.3s; }
     
     /* 内容过渡 */
-    #main-content {
-      transition: opacity 0.3s;
-      animation: fadeIn 0.3s;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
     .content-transition-enter {
       opacity: 0;
       transform: translateY(10px);
@@ -367,37 +253,21 @@ document.addEventListener("DOMContentLoaded", function() {
       transition: opacity 0.3s, transform 0.3s;
     }
     
-    /* 布局稳定性 */
-    .page__inner-wrap {
-      min-height: 200px;
-    }
-    
-    /* 头像和侧边栏修复 */
+    /* 布局修复 */
     .author__avatar {
       overflow: hidden;
-      width: auto !important;
-      height: auto !important;
+      display: block;
       margin-bottom: 1em;
     }
     
     .author__avatar img {
-      display: block;
       max-width: 100%;
       height: auto;
-      margin: 0 auto;
+      display: block;
     }
     
     .sidebar {
-      position: sticky;
-      top: 2em;
-      max-height: calc(100vh - 4em);
-      overflow-y: auto;
-    }
-    
-    /* 图片处理 */
-    img {
-      max-width: 100%;
-      height: auto;
+      display: block;
     }
     
     /* 错误提示 */
