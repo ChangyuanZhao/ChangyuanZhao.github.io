@@ -4,6 +4,7 @@ permalink: /
 title: ""
 excerpt: ""
 author_profile: true
+min_content_height: 800px  # 添加这一行
 redirect_from: 
   - /about/
   - /about.html
