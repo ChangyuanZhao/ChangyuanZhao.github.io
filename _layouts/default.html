@@ -14,89 +14,58 @@ layout: compress
     };
   </script>
   
-  <!-- 添加固定导航栏和侧边栏的样式 -->
+  <!-- 添加确保一致性的样式 -->
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-    }
-    
-    body {
-      display: flex;
-      flex-direction: column;
-    }
-    
     .masthead {
-      position: fixed;
+      position: sticky;
       top: 0;
-      left: 0;
-      right: 0;
       z-index: 1000;
       background-color: #fff;
+      width: 100%;
       box-shadow: 0 1px 4px rgba(0,0,0,0.1);
     }
     
     #main {
       display: flex;
-      flex: 1;
-      margin-top: 80px; /* 根据导航栏高度调整 */
-      min-height: calc(100vh - 80px); /* 确保最小高度 */
-      position: relative;
+      flex-wrap: wrap;
+      margin-top: 1em;
+      min-height: 80vh; /* 确保最小高度 */
     }
     
     .sidebar {
-      position: fixed;
-      top: 80px; /* 根据导航栏高度调整 */
-      left: 0;
-      width: 250px; /* 根据您的侧边栏宽度调整 */
+      position: sticky;
+      top: 80px; /* 根据您的导航栏高度调整 */
       height: calc(100vh - 80px);
       overflow-y: auto;
-      padding: 20px;
-      background-color: #fff;
-      z-index: 900;
+      padding-right: 15px;
+      align-self: flex-start;
     }
     
     .page {
-      margin-left: 250px; /* 根据侧边栏宽度调整 */
-      width: calc(100% - 250px);
-      padding: 20px;
-      min-height: calc(100vh - 80px);
+      flex: 1;
+      min-width: 0;
+      padding-left: 15px;
+      padding-right: 15px;
+      /* 确保内容区域有足够高度与侧边栏一致 */
+      min-height: calc(100vh - 100px);
     }
     
-    .page__content {
-      min-height: 600px; /* 确保内容区域有足够高度 */
-    }
-    
-    /* 移动设备响应式样式 */
+    /* 在移动设备上调整样式 */
     @media screen and (max-width: 767px) {
-      .masthead {
-        position: sticky;
+      .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        padding-right: 0;
       }
       
       #main {
         flex-direction: column;
-        margin-top: 0;
-      }
-      
-      .sidebar {
-        position: relative;
-        top: 0;
-        width: 100%;
-        height: auto;
-        padding: 10px;
       }
       
       .page {
-        margin-left: 0;
         width: 100%;
-        padding: 10px;
-        min-height: auto;
-      }
-      
-      .page__content {
-        min-height: auto;
+        padding: 0 10px;
       }
     }
   </style>
@@ -105,9 +74,7 @@ layout: compress
     {% include browser-upgrade.html %}
     {% include masthead.html %}
     <div id="main" role="main">
-      <div class="sidebar">
-        {% include sidebar.html %}
-      </div>
+      {% include sidebar.html %}
     
       <article class="page" itemscope itemtype="http://schema.org/CreativeWork">
         {% if page.title %}
@@ -125,90 +92,53 @@ layout: compress
     <!-- 引入 spa.js -->
     <script src="/assets/js/spa.js"></script>
     
-    <!-- 处理布局一致性的脚本 -->
+    <!-- 添加确保布局一致性的脚本 -->
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        // 获取导航栏高度
-        const masthead = document.querySelector('.masthead');
-        const mastheadHeight = masthead ? masthead.offsetHeight : 0;
-        
-        // 设置主内容区域和侧边栏的顶部位置
-        const main = document.getElementById('main');
-        const sidebar = document.querySelector('.sidebar');
-        
-        if (main && masthead) {
-          main.style.marginTop = `${mastheadHeight}px`;
-        }
-        
-        if (sidebar && masthead) {
-          sidebar.style.top = `${mastheadHeight}px`;
-          sidebar.style.height = `calc(100vh - ${mastheadHeight}px)`;
-        }
-        
-        // 保存/恢复侧边栏滚动位置
-        const savedScrollTop = localStorage.getItem('sidebarScrollTop');
-        if (savedScrollTop && sidebar) {
-          sidebar.scrollTop = parseInt(savedScrollTop, 10);
-        }
-        
-        // 当窗口大小变化时，重新调整布局
-        window.addEventListener('resize', function() {
-          const currentMastheadHeight = masthead ? masthead.offsetHeight : 0;
+        // 计算并设置一致的高度
+        function setConsistentHeight() {
+          const sidebar = document.querySelector('.sidebar');
+          const pageContent = document.querySelector('.page');
+          const mainContainer = document.getElementById('main');
+          const masthead = document.querySelector('.masthead');
           
-          if (main) {
-            main.style.marginTop = window.innerWidth <= 767 ? '0' : `${currentMastheadHeight}px`;
+          if (sidebar && pageContent && masthead && window.innerWidth > 767) {
+            // 获取视窗高度和导航栏高度
+            const viewportHeight = window.innerHeight;
+            const mastheadHeight = masthead.offsetHeight;
+            
+            // 设置主容器最小高度
+            const mainMinHeight = viewportHeight - mastheadHeight - 40; // 减去一些边距
+            mainContainer.style.minHeight = `${mainMinHeight}px`;
+            
+            // 设置内容区域最小高度，确保与侧边栏一致
+            const contentMinHeight = mainMinHeight;
+            pageContent.style.minHeight = `${contentMinHeight}px`;
           }
-          
-          if (sidebar) {
-            if (window.innerWidth <= 767) {
-              sidebar.style.top = '0';
-              sidebar.style.height = 'auto';
-            } else {
-              sidebar.style.top = `${currentMastheadHeight}px`;
-              sidebar.style.height = `calc(100vh - ${currentMastheadHeight}px)`;
-            }
-          }
+        }
+        
+        // 初始设置
+        setConsistentHeight();
+        
+        // 窗口大小变化时重新计算
+        window.addEventListener('resize', setConsistentHeight);
+        
+        // 页面加载完成后再次检查（处理可能的图片加载导致的高度变化）
+        window.addEventListener('load', setConsistentHeight);
+        
+        // 监听内容变化，确保高度一致性
+        const contentObserver = new MutationObserver(function(mutations) {
+          // 使用setTimeout给DOM有时间更新
+          setTimeout(setConsistentHeight, 100);
         });
         
-        // 保存侧边栏滚动位置
-        if (sidebar) {
-          sidebar.addEventListener('scroll', function() {
-            localStorage.setItem('sidebarScrollTop', sidebar.scrollTop);
-          });
-        }
-        
-        // 处理SPA页面切换
-        const handleContentChange = function() {
-          // 重新获取页面元素（可能在SPA中被替换）
-          const updatedSidebar = document.querySelector('.sidebar');
-          
-          if (updatedSidebar) {
-            // 恢复滚动位置
-            const savedPosition = localStorage.getItem('sidebarScrollTop');
-            if (savedPosition) {
-              updatedSidebar.scrollTop = parseInt(savedPosition, 10);
-            }
-          }
-        };
-        
-        // 监听内容变化
         const contentArea = document.querySelector('.page__content');
         if (contentArea) {
-          const observer = new MutationObserver(handleContentChange);
-          observer.observe(contentArea, { childList: true, subtree: true });
-        }
-        
-        // 如果spa.js有钩子函数，添加页面切换事件处理
-        if (window.spa && typeof window.spa.onPageChange === 'function') {
-          window.spa.onPageChange(handleContentChange);
-        }
-      });
-      
-      // 在页面离开前保存状态
-      window.addEventListener('beforeunload', function() {
-        const sidebar = document.querySelector('.sidebar');
-        if (sidebar) {
-          localStorage.setItem('sidebarScrollTop', sidebar.scrollTop);
+          contentObserver.observe(contentArea, {
+            childList: true,
+            subtree: true,
+            attributes: true
+          });
         }
       });
     </script>
