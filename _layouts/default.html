@@ -1,7 +1,6 @@
 ---
 layout: compress
 ---
-
 <!doctype html>
 <html lang="en" class="no-js">
   <head>
@@ -14,13 +13,64 @@ layout: compress
       travelCities: {{ site.data.travel.cities | jsonify }}
     };
   </script>
+  
+  <!-- 添加固定导航栏和侧边栏的样式 -->
+  <style>
+    .masthead {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background-color: #fff;
+      width: 100%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar {
+      position: sticky;
+      top: 80px; /* 根据您的导航栏高度调整 */
+      height: calc(100vh - 80px);
+      overflow-y: auto;
+      padding-right: 15px;
+    }
+    
+    /* 确保主内容区域正确定位 */
+    #main {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      margin-top: 1em;
+    }
+    
+    .page {
+      flex: 1;
+      min-width: 0;
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+    
+    /* 确保在移动设备上的响应式布局 */
+    @media screen and (max-width: 767px) {
+      .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        padding-right: 0;
+      }
+      
+      #main {
+        flex-direction: column;
+      }
+      
+      .page {
+        width: 100%;
+        padding: 0 10px;
+      }
+    }
+  </style>
 </head>
-
   <body>
-
     {% include browser-upgrade.html %}
     {% include masthead.html %}
-
     <div id="main" role="main">
       {% include sidebar.html %}
     
@@ -36,10 +86,36 @@ layout: compress
         </div>
       </article>
     </div>
-
     {% include scripts.html %}
-
     <!-- 引入 spa.js -->
     <script src="/assets/js/spa.js"></script>
+    
+    <!-- 添加控制SPA行为的脚本 -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // 确保页面加载后布局正确
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.page');
+        
+        // 修复可能的布局问题
+        if (sidebar && mainContent) {
+          // 确保在大屏幕上侧边栏和主内容区域并排显示
+          if (window.innerWidth > 767) {
+            mainContent.style.width = `calc(100% - ${sidebar.offsetWidth}px)`;
+          }
+        }
+        
+        // 监听窗口大小变化，调整布局
+        window.addEventListener('resize', function() {
+          if (sidebar && mainContent) {
+            if (window.innerWidth > 767) {
+              mainContent.style.width = `calc(100% - ${sidebar.offsetWidth}px)`;
+            } else {
+              mainContent.style.width = '100%';
+            }
+          }
+        });
+      });
+    </script>
   </body>
 </html>
