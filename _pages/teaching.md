@@ -15,3 +15,4 @@ min_content_height_4k: 1200px # 4K显示器
 - *SC1007*: &nbsp; DATA STRUCTURES & ALGORITHMS, NTU, Spring Semester, 2025
 
 
+<div style="min-height: 600px;"></div>
