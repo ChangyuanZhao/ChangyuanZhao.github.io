@@ -6,7 +6,7 @@ excerpt: ""
 author_profile: true
 ---
 
-# 📝 Publications
+# 📝 Selected Publications
 
 ---
 
