@@ -8,7 +8,7 @@ author_profile: true
 
 
 
-# 📖 Educations
+## 📖 Educations
 - *Nanyang Technological University, Singapore*  
 **Ph.D., Aug 2023 – Present**  
 ◦ Supervised by Prof. Dusit Niyato
@@ -23,7 +23,7 @@ author_profile: true
 
   
 
-# 🎖 Honors and Awards
+## 🎖 Honors and Awards
 - *2024.11* One project received an Honorable Mention in the 2024 ComSoc Student Competition *"Communications Technology Changing the World"*, ranking among the top 16 out of 93 submissions.
 
 
