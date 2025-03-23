@@ -10,7 +10,7 @@ min_content_height_4k: 1200px # 4K显示器
 
 
 
-## 📚 Teaching Assistant
+# 📚 Teaching Assistant
 - *SC1007*: &nbsp; DATA STRUCTURES & ALGORITHMS, NTU, Fall Semester, 2024
 - *SC1007*: &nbsp; DATA STRUCTURES & ALGORITHMS, NTU, Spring Semester, 2025
 
