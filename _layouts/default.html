@@ -73,6 +73,33 @@ layout: compress
         padding: 0 10px;
       }
     }
+    
+    /* 针对4K及更高分辨率的专门优化 */
+    @media screen and (min-width: 2560px) {
+      .fixed-height-content {
+        min-height: {{ page.min_content_height_4k | default: '1200px' }};
+      }
+      
+      .sidebar {
+        top: 100px; /* 在大屏幕上增加导航栏高度的估计值 */
+        height: calc(100vh - 100px);
+      }
+      
+      /* 增加字体大小，提高4K下的可读性 */
+      body {
+        font-size: 1.2rem;
+      }
+      
+      /* 调整内容区域宽度比例 */
+      .page {
+        min-height: calc(100vh - 120px);
+      }
+      
+      /* 提高在超高分辨率下的最小高度 */
+      #main {
+        min-height: 90vh;
+      }
+    }
   </style>
 </head>
   <body>
@@ -100,21 +127,31 @@ layout: compress
     <!-- 添加确保布局一致性的脚本 -->
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        // 使用固定的最小高度，避免动态计算可能导致的跳动
-        const fixedMinHeight = '800px'; // 可以根据实际需要调整
+        // 根据屏幕分辨率设置不同的最小高度
+        function getMinHeightForScreen() {
+          // 检测4K及更高分辨率
+          if (window.innerWidth >= 2560 || window.innerHeight >= 1440) {
+            return '1200px'; // 4K分辨率下使用更大的高度
+          } else {
+            return '800px'; // 标准分辨率
+          }
+        }
+        
+        // 获取适合当前屏幕的最小高度
+        const minHeight = getMinHeightForScreen();
         
         // 获取内容区域元素
         const contentArea = document.querySelector('.page__content');
         if (contentArea) {
           // 确保固定高度样式被应用
-          contentArea.style.minHeight = fixedMinHeight;
+          contentArea.style.minHeight = minHeight;
         }
         
         // 监听DOM变化，确保样式被保持
         const observer = new MutationObserver(function(mutations) {
           const updatedContentArea = document.querySelector('.page__content');
           if (updatedContentArea) {
-            updatedContentArea.style.minHeight = fixedMinHeight;
+            updatedContentArea.style.minHeight = getMinHeightForScreen();
           }
         });
         
@@ -144,9 +181,17 @@ layout: compress
             setTimeout(function() {
               const updatedContentArea = document.querySelector('.page__content');
               if (updatedContentArea) {
-                updatedContentArea.style.minHeight = fixedMinHeight;
+                updatedContentArea.style.minHeight = getMinHeightForScreen();
               }
             }, 100);
+          }
+        });
+        
+        // 监听窗口大小变化，重新设置高度
+        window.addEventListener('resize', function() {
+          const updatedContentArea = document.querySelector('.page__content');
+          if (updatedContentArea) {
+            updatedContentArea.style.minHeight = getMinHeightForScreen();
           }
         });
       });
