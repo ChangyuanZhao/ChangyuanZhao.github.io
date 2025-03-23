@@ -8,7 +8,7 @@ redirect_from:
   - /about/
   - /about.html
 ---
-<div style="border: 2px dashed red; padding: 20px; max-width: 800px; margin: auto;">
+
 
 {% if site.google_scholar_stats_use_cdn %}
 {% assign gsDataBaseUrl = "https://cdn.jsdelivr.net/gh/" | append: site.repository | append: "@" %}
@@ -198,4 +198,4 @@ For more information, please visit our research group at NTU.
   });
 </script>
 
-</div>
+
