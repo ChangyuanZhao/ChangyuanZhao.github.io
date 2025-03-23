@@ -8,11 +8,21 @@
  * 4. Preserved map information when switching pages
  * 5. Refresh handling for subpages (redirect to home first, then to the target)
  * 6. Improved anchor scrolling for highlighted sections
+ * 7. UI component state preservation between page navigations
+ * 8. Dynamic component hydration for subpages
  */
 document.addEventListener("DOMContentLoaded", function () {
   // Core variables
   const mainContent = document.querySelector(".page__content");
   const currentPath = window.location.pathname;
+  
+  // Component state cache
+  window.componentStateCache = window.componentStateCache || {
+    // Store component states by component ID
+    components: {},
+    // Track current page components
+    currentPageComponents: []
+  };
   
   // Set consistent white background
   function setWhiteBackground() {
@@ -65,10 +75,14 @@ document.addEventListener("DOMContentLoaded", function () {
       y: window.scrollY
     };
     
+    // Capture component states before redirect
+    captureComponentStates();
+    
     // Store redirection info
     sessionStorage.setItem("redirectTarget", currentPath);
     sessionStorage.setItem("scrollPosition", JSON.stringify(scrollPosition));
     sessionStorage.setItem("isRefresh", "true");
+    sessionStorage.setItem("componentStates", JSON.stringify(window.componentStateCache));
     
     // Redirect to home
     window.location.href = "/";
@@ -115,6 +129,18 @@ document.addEventListener("DOMContentLoaded", function () {
   if (currentPath === "/" || currentPath.endsWith("index.html")) {
     const redirectTarget = sessionStorage.getItem("redirectTarget");
     const isRefreshRedirect = sessionStorage.getItem("isRefresh") === "true";
+    
+    // Restore component states if available
+    const savedComponentStates = sessionStorage.getItem("componentStates");
+    if (savedComponentStates) {
+      try {
+        window.componentStateCache = JSON.parse(savedComponentStates);
+        sessionStorage.removeItem("componentStates");
+        console.log("Restored component states from session storage");
+      } catch (e) {
+        console.error("Error parsing component states:", e);
+      }
+    }
     
     if (redirectTarget) {
       console.log(`Found redirect target: ${redirectTarget}, refresh state: ${isRefreshRedirect ? "refresh" : "regular"}`);
@@ -165,6 +191,207 @@ document.addEventListener("DOMContentLoaded", function () {
     return url.includes("/travel") || url.includes("/map");
   }
   
+  // Capture states of all dynamic components on current page
+  function captureComponentStates() {
+    console.log("Capturing component states");
+    
+    // Reset current page components list
+    window.componentStateCache.currentPageComponents = [];
+    
+    // Find all dynamic components (components with data-component-id)
+    const dynamicComponents = document.querySelectorAll("[data-component-id]");
+    
+    dynamicComponents.forEach(component => {
+      const componentId = component.getAttribute("data-component-id");
+      
+      if (!componentId) return;
+      
+      // Add to current page components
+      window.componentStateCache.currentPageComponents.push(componentId);
+      
+      // Determine component type
+      const componentType = component.getAttribute("data-component-type") || 
+                            component.tagName.toLowerCase();
+      
+      // Capture state based on component type
+      let state = {};
+      
+      switch (componentType) {
+        case "select":
+          state = {
+            value: component.value,
+            selectedIndex: component.selectedIndex
+          };
+          break;
+          
+        case "input":
+        case "textarea":
+          state = {
+            value: component.value,
+            checked: component.checked
+          };
+          break;
+          
+        case "form":
+          // Capture all form field values
+          const formData = new FormData(component);
+          const formValues = {};
+          for (const [key, value] of formData.entries()) {
+            formValues[key] = value;
+          }
+          state = { formValues };
+          break;
+          
+        case "div":
+        case "section":
+          // For containers, check for special attributes
+          if (component.hasAttribute("data-state")) {
+            try {
+              state = JSON.parse(component.getAttribute("data-state"));
+            } catch (e) {
+              console.warn(`Invalid JSON in data-state for ${componentId}:`, e);
+              state = { rawState: component.getAttribute("data-state") };
+            }
+          } else {
+            // Capture innerHTML as fallback for div/section components
+            state = { innerHTML: component.innerHTML };
+          }
+          break;
+          
+        default:
+          // For other components, try to get innerHTML and properties
+          state = { 
+            innerHTML: component.innerHTML,
+            className: component.className,
+            attributes: {}
+          };
+          
+          // Store all data-* attributes
+          Array.from(component.attributes).forEach(attr => {
+            if (attr.name.startsWith("data-") && attr.name !== "data-component-id" && attr.name !== "data-component-type") {
+              state.attributes[attr.name] = attr.value;
+            }
+          });
+      }
+      
+      // Store component state
+      window.componentStateCache.components[componentId] = {
+        type: componentType,
+        state: state,
+        timestamp: Date.now()
+      };
+      
+      console.log(`Captured state for component: ${componentId} (${componentType})`);
+    });
+  }
+  
+  // Restore components from cache
+  function restoreComponentStates() {
+    console.log("Restoring component states");
+    
+    // Find all dynamic components on the new page
+    const dynamicComponents = document.querySelectorAll("[data-component-id]");
+    
+    dynamicComponents.forEach(component => {
+      const componentId = component.getAttribute("data-component-id");
+      
+      if (!componentId || !window.componentStateCache.components[componentId]) return;
+      
+      const cachedComponent = window.componentStateCache.components[componentId];
+      const componentType = component.getAttribute("data-component-type") || 
+                            component.tagName.toLowerCase();
+      
+      // Only restore if component types match
+      if (componentType !== cachedComponent.type) {
+        console.warn(`Component type mismatch for ${componentId}: ${componentType} vs ${cachedComponent.type}`);
+        return;
+      }
+      
+      const state = cachedComponent.state;
+      
+      // Restore state based on component type
+      switch (componentType) {
+        case "select":
+          if (state.hasOwnProperty("selectedIndex")) {
+            component.selectedIndex = state.selectedIndex;
+          } else if (state.hasOwnProperty("value")) {
+            component.value = state.value;
+          }
+          break;
+          
+        case "input":
+        case "textarea":
+          if (state.hasOwnProperty("value")) {
+            component.value = state.value;
+          }
+          if (state.hasOwnProperty("checked")) {
+            component.checked = state.checked;
+          }
+          break;
+          
+        case "form":
+          if (state.formValues) {
+            // Restore form field values
+            Object.entries(state.formValues).forEach(([key, value]) => {
+              const field = component.elements[key];
+              if (field) {
+                if (field.type === "checkbox" || field.type === "radio") {
+                  field.checked = (field.value === value);
+                } else {
+                  field.value = value;
+                }
+              }
+            });
+          }
+          break;
+          
+        case "div":
+        case "section":
+          // For containers with data-state
+          if (component.hasAttribute("data-state") && state.hasOwnProperty("rawState")) {
+            component.setAttribute("data-state", state.rawState);
+          } else if (state.hasOwnProperty("innerHTML")) {
+            // Restore innerHTML
+            component.innerHTML = state.innerHTML;
+            
+            // Re-execute scripts within the restored content
+            const scripts = component.querySelectorAll("script");
+            scripts.forEach(oldScript => {
+              const newScript = document.createElement("script");
+              Array.from(oldScript.attributes).forEach(attr => {
+                newScript.setAttribute(attr.name, attr.value);
+              });
+              newScript.innerHTML = oldScript.innerHTML;
+              oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+          }
+          break;
+          
+        default:
+          // For other components
+          if (state.hasOwnProperty("innerHTML")) {
+            component.innerHTML = state.innerHTML;
+          }
+          if (state.hasOwnProperty("className")) {
+            component.className = state.className;
+          }
+          if (state.attributes) {
+            // Restore data-* attributes
+            Object.entries(state.attributes).forEach(([attrName, attrValue]) => {
+              component.setAttribute(attrName, attrValue);
+            });
+          }
+      }
+      
+      console.log(`Restored state for component: ${componentId} (${componentType})`);
+      
+      // Trigger custom event to notify component it was restored
+      component.dispatchEvent(new CustomEvent("component:restored", {
+        detail: { id: componentId, type: componentType, state: state }
+      }));
+    });
+  }
+  
   // Load page content without full refresh
   function loadPageContent(url, isRedirectLoad = false) {
     // Save anchor if present for later use
@@ -195,6 +422,9 @@ document.addEventListener("DOMContentLoaded", function () {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     `;
     document.body.appendChild(loadingIndicator);
+    
+    // Capture current page component states before navigation
+    captureComponentStates();
     
     // Pre-load map resources if navigating to map page
     if (willBeMapPage && !wasMapPage) {
@@ -237,6 +467,9 @@ document.addEventListener("DOMContentLoaded", function () {
           // Update page title
           document.title = doc.title;
           
+          // Extract component structure from new page before overwriting
+          const componentStructure = extractComponentStructure(newContent);
+          
           // Update main content only
           mainContent.innerHTML = newContent.innerHTML;
           
@@ -252,6 +485,12 @@ document.addEventListener("DOMContentLoaded", function () {
           
           // Initialize new content
           initPageContent();
+          
+          // Restore component states (after scripts have run)
+          setTimeout(() => {
+            restoreComponentStates();
+            hydratePageComponents(componentStructure);
+          }, 50);
           
           // Rebind all links
           bindAllLinks();
@@ -284,6 +523,76 @@ document.addEventListener("DOMContentLoaded", function () {
         // Remove loading indicator
         document.body.removeChild(loadingIndicator);
       });
+  }
+  
+  // Extract component structure from a DOM element
+  function extractComponentStructure(element) {
+    const components = {};
+    
+    // Find all components
+    const componentElements = element.querySelectorAll("[data-component-id]");
+    
+    componentElements.forEach(comp => {
+      const id = comp.getAttribute("data-component-id");
+      const type = comp.getAttribute("data-component-type") || comp.tagName.toLowerCase();
+      
+      components[id] = {
+        type,
+        parentSelector: getParentSelector(comp)
+      };
+    });
+    
+    return components;
+  }
+  
+  // Get a CSS selector for an element's parent
+  function getParentSelector(element) {
+    if (!element.parentElement) return null;
+    
+    const parent = element.parentElement;
+    
+    // Try to find a good selector for the parent
+    if (parent.id) {
+      return `#${parent.id}`;
+    }
+    
+    if (parent.className) {
+      const classes = parent.className.split(' ').filter(c => c.trim() !== '');
+      if (classes.length > 0) {
+        return `.${classes.join('.')}`;
+      }
+    }
+    
+    // Get a path based on tag names
+    let currentElem = parent;
+    const path = [];
+    while (currentElem && currentElem !== document.body) {
+      path.unshift(currentElem.tagName.toLowerCase());
+      currentElem = currentElem.parentElement;
+    }
+    
+    return path.join(' > ');
+  }
+  
+  // Hydrate components on the page
+  function hydratePageComponents(componentStructure) {
+    // Fire global hydration event
+    document.dispatchEvent(new CustomEvent("spa:hydrateComponents", {
+      detail: { componentStructure }
+    }));
+    
+    // For each component, fire a specific hydration event
+    Object.entries(componentStructure).forEach(([id, details]) => {
+      const element = document.querySelector(`[data-component-id="${id}"]`);
+      
+      if (element) {
+        element.dispatchEvent(new CustomEvent("component:hydrate", {
+          detail: { id, type: details.type }
+        }));
+        
+        console.log(`Hydrated component: ${id} (${details.type})`);
+      }
+    });
   }
   
   // Preload map resources
@@ -369,6 +678,291 @@ document.addEventListener("DOMContentLoaded", function () {
                           document.querySelector(".travel-map-container");
           if (mapContainer) {
             createMapWithLeaflet(mapContainer);
+      }
+    };
+  }
+  
+  // Bind all internal links
+  function bindAllLinks() {
+    document.querySelectorAll('a[href^="/"]').forEach(link => {
+      // Skip already processed links
+      if (link.hasAttribute(HANDLED_LINK_ATTR)) return;
+      
+      const href = link.getAttribute("href");
+      
+      // Skip resource links
+      if (href.match(/\.(pdf|zip|jpg|png|gif|svg|mp4|webm)$/i)) return;
+      
+      // Mark as handled
+      link.setAttribute(HANDLED_LINK_ATTR, "true");
+      
+      // Add click handler
+      link.addEventListener("click", function(e) {
+        e.preventDefault();
+        
+        // Handle all navigation through the loadPageContent function
+        loadPageContent(href);
+      });
+    });
+  }
+  
+  // Handle browser back/forward buttons
+  window.addEventListener("popstate", function(event) {
+    if (event.state && event.state.url) {
+      loadPageContent(event.state.url);
+    } else {
+      loadPageContent(window.location.pathname + window.location.hash);
+    }
+  });
+  
+  // Scroll to anchor function with improved reliability
+  function scrollToAnchor(url) {
+    // Extract the hash part from the URL
+    const hash = url.includes('#') ? url.substring(url.indexOf('#')) : null;
+    
+    if (!hash) return;
+    
+    console.log(`Attempting to scroll to anchor: ${hash}`);
+    
+    // Function to do the actual scrolling with multiple attempts
+    const attemptScrollToElement = function(retryCount = 0, maxRetries = 5) {
+      // Clean the hash by removing any URL encoding
+      const cleanHash = decodeURIComponent(hash);
+      const hashWithoutPrefix = cleanHash.substring(1); // Remove the # prefix
+      
+      // Try multiple selector approaches
+      let targetElement = null;
+      
+      // Method 1: Direct ID selector
+      try {
+        targetElement = document.querySelector(cleanHash);
+      } catch (e) {
+        console.warn(`Error with direct selector "${cleanHash}":`, e.message);
+      }
+      
+      // Method 2: Try with escaped selector for special characters
+      if (!targetElement) {
+        try {
+          // Escape special characters in CSS selector
+          const escapedHash = '#' + CSS.escape(hashWithoutPrefix);
+          targetElement = document.querySelector(escapedHash);
+        } catch (e) {
+          console.warn("Error with escaped selector:", e.message);
+        }
+      }
+      
+      // Method 3: Try getting element by ID directly
+      if (!targetElement) {
+        targetElement = document.getElementById(hashWithoutPrefix);
+      }
+      
+      // Method 4: Check for data-section-id attribute
+      if (!targetElement) {
+        targetElement = document.querySelector(`[data-section-id="${hashWithoutPrefix}"]`);
+      }
+      
+      // Method 5: Look for elements with class matching the hash
+      if (!targetElement) {
+        targetElement = document.querySelector(`.${hashWithoutPrefix}`);
+      }
+      
+      // Method 6: Try finding an anchor name
+      if (!targetElement) {
+        targetElement = document.querySelector(`a[name="${hashWithoutPrefix}"]`);
+      }
+      
+      // Method 7: Try finding headers with id containing the hash (partial match)
+      if (!targetElement) {
+        const headers = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id]');
+        for (const header of headers) {
+          if (header.id.includes(hashWithoutPrefix)) {
+            targetElement = header;
+            break;
+          }
+        }
+      }
+      
+      if (targetElement) {
+        console.log(`Found target element for "${cleanHash}", scrolling to it`);
+        
+        // Scroll with smooth behavior
+        targetElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start'
+        });
+        
+        // Highlight the element briefly to make it more noticeable
+        const originalBackground = targetElement.style.backgroundColor;
+        const originalTransition = targetElement.style.transition;
+        
+        targetElement.style.transition = 'background-color 1s ease-in-out';
+        targetElement.style.backgroundColor = 'rgba(255, 255, 0, 0.2)';
+        
+        setTimeout(() => {
+          targetElement.style.backgroundColor = originalBackground;
+          setTimeout(() => {
+            targetElement.style.transition = originalTransition;
+          }, 1000);
+        }, 1000);
+        
+        return true;
+      } else if (retryCount < maxRetries) {
+        // Element might not be fully loaded yet, retry after a delay
+        console.log(`Element for "${cleanHash}" not found, retrying in ${100 * (retryCount + 1)}ms (attempt ${retryCount + 1}/${maxRetries})`);
+        setTimeout(() => {
+          attemptScrollToElement(retryCount + 1, maxRetries);
+        }, 100 * (retryCount + 1));
+        return false;
+      } else {
+        console.warn(`Could not find element for "${cleanHash}" after ${maxRetries} attempts`);
+        return false;
+      }
+    };
+    
+    // Start with a larger initial delay for content to fully render
+    setTimeout(() => {
+      attemptScrollToElement();
+    }, 300);
+  }
+  
+  // Initial link binding
+  bindAllLinks();
+  
+  // Add helper for handling component persistence
+  window.SPAHelper = {
+    // Register a component for state management
+    registerComponent: function(id, element, options = {}) {
+      const type = options.type || element.tagName.toLowerCase();
+      
+      // Add data attributes for component tracking
+      element.setAttribute('data-component-id', id);
+      element.setAttribute('data-component-type', type);
+      
+      console.log(`Registered component: ${id} (${type})`);
+      
+      // If options include initialState, store it
+      if (options.initialState) {
+        if (!window.componentStateCache.components[id]) {
+          window.componentStateCache.components[id] = {
+            type: type,
+            state: options.initialState,
+            timestamp: Date.now()
+          };
+        }
+      }
+      
+      // Return methods for the component
+      return {
+        setState: function(newState) {
+          if (!window.componentStateCache.components[id]) {
+            window.componentStateCache.components[id] = {
+              type: type,
+              state: {},
+              timestamp: Date.now()
+            };
+          }
+          
+          // Update state
+          window.componentStateCache.components[id].state = {
+            ...window.componentStateCache.components[id].state,
+            ...newState
+          };
+          window.componentStateCache.components[id].timestamp = Date.now();
+          
+          console.log(`Updated state for component: ${id}`, newState);
+          
+          // If element has data-state attribute, update it
+          if (element.hasAttribute('data-state')) {
+            element.setAttribute('data-state', JSON.stringify(window.componentStateCache.components[id].state));
+          }
+          
+          return window.componentStateCache.components[id].state;
+        },
+        
+        getState: function() {
+          return window.componentStateCache.components[id]?.state || {};
+        },
+        
+        clearState: function() {
+          if (window.componentStateCache.components[id]) {
+            delete window.componentStateCache.components[id];
+          }
+        }
+      };
+    }
+  };
+  
+  // Map observation to detect dynamically added map containers
+  const mapObserver = new MutationObserver(mutations => {
+    for (const mutation of mutations) {
+      if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+        // Check if map container was added
+        const hasMapContainer = Array.from(mutation.addedNodes).some(node => {
+          if (node.nodeType !== Node.ELEMENT_NODE) return false;
+          
+          if (node.id === "travel-map" || node.classList?.contains("travel-map-container")) {
+            return true;
+          }
+          
+          return node.querySelector && (
+            node.querySelector("#travel-map") || 
+            node.querySelector(".travel-map-container")
+          );
+        });
+        
+        if (hasMapContainer) {
+          console.log("Map container detected in DOM");
+          if (typeof window.initTravelMap === 'function') {
+            window.initTravelMap();
+          }
+        }
+      }
+    }
+  });
+  
+  // Start observing DOM for map container
+  mapObserver.observe(document.body, { childList: true, subtree: true });
+  
+  // Check for hash in URL on initial load
+  if (window.location.hash) {
+    // Wait for page to fully load before scrolling to hash
+    setTimeout(() => {
+      scrollToAnchor(window.location.pathname + window.location.hash);
+    }, 500);
+  }
+  
+  // Expose global utility functions for component management
+  window.SPAComponentManager = {
+    // Force capture of all component states
+    captureAll: captureComponentStates,
+    
+    // Force restore of all component states
+    restoreAll: restoreComponentStates,
+    
+    // Get cached component state
+    getComponentState: function(id) {
+      return window.componentStateCache.components[id]?.state || null;
+    },
+    
+    // Set component state
+    setComponentState: function(id, state) {
+      if (!window.componentStateCache.components[id]) {
+        return false;
+      }
+      
+      window.componentStateCache.components[id].state = state;
+      return true;
+    }
+  };
+  
+  // Document level event to handle component loading across pages
+  document.addEventListener("DOMContentLoaded", function() {
+    console.log("SPA: Document loaded, firing component init event");
+    
+    // Fire global component initialization event
+    document.dispatchEvent(new CustomEvent("spa:componentsInit"));
+  });
+});(mapContainer);
           }
         }
       }, 300);
