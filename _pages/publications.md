@@ -12,6 +12,7 @@ author_profile: true
 
 ## 📰 Journal & Magazine Papers
 
+<div style="border: 2px dashed red; padding: 20px; max-width: 800px; margin: auto;">
 
 
 {% assign journals = site.data.publications | where: "type", "Journal" %}
@@ -45,3 +46,5 @@ author_profile: true
   {% endif %}
   {% include publication-entry.html pub=pub %}
 {% endfor %}
+
+</div>
