@@ -4,6 +4,7 @@ permalink: /publications/
 layout: page
 excerpt: ""
 author_profile: true
+min_content_height: 800px  # 添加这一行
 ---
 
 # 📝 Selected Publications
