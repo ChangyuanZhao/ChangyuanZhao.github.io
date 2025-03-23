@@ -1,174 +1,179 @@
 /**
- * acad-homepage SPA 实现 - 强化刷新处理
- * 修复地图在页面切换后不显示的问题
+ * Enhanced SPA Implementation for Academic Homepage
+ * 
+ * Features:
+ * 1. Content-only updates when navigating between pages
+ * 2. Single page navigation without opening new pages
+ * 3. Consistent white background
+ * 4. Preserved map information when switching pages
+ * 5. Refresh handling for subpages (redirect to home first, then to the target)
  */
 document.addEventListener("DOMContentLoaded", function () {
-  // 定义关键变量
-  const isMobile = window.innerWidth < 768;
-  const currentPath = window.location.pathname;
+  // Core variables
   const mainContent = document.querySelector(".page__content");
+  const currentPath = window.location.pathname;
   
-  // 设置主页背景为白色
-  document.body.style.backgroundColor = "#ffffff";
-  if (document.querySelector(".page__content")) {
-    document.querySelector(".page__content").style.backgroundColor = "#ffffff";
+  // Set consistent white background
+  function setWhiteBackground() {
+    const elementsToWhiten = [
+      document.body,
+      document.querySelector(".page__content"),
+      document.querySelector(".layout--single")
+    ];
+    
+    elementsToWhiten.forEach(element => {
+      if (element) element.style.backgroundColor = "#ffffff";
+    });
+    
+    // Add permanent style rule
+    if (!document.getElementById("spa-styles")) {
+      const styleElement = document.createElement("style");
+      styleElement.id = "spa-styles";
+      styleElement.textContent = `
+        body, .page__content, .layout--single {
+          background-color: #ffffff !important;
+        }
+      `;
+      document.head.appendChild(styleElement);
+    }
   }
   
-  // === 新增：检测刷新操作 ===
-  // 使用performance API检测是否为页面刷新
-  const isRefresh = (performance && performance.navigation && 
-                     performance.navigation.type === 1) || 
-                    (window.performance && window.performance.getEntriesByType && 
-                     window.performance.getEntriesByType("navigation")[0]?.type === "reload");
+  // Initialize white background
+  setWhiteBackground();
   
-  // 子页面刷新处理逻辑
+  // Check if this is a page refresh
+  const isRefresh = (
+    (performance && performance.navigation && performance.navigation.type === 1) || 
+    (window.performance && window.performance.getEntriesByType && 
+     window.performance.getEntriesByType("navigation")[0]?.type === "reload")
+  );
+  
+  // Handle subpage refresh: redirect to home, then return to subpage
   if (isRefresh && currentPath !== "/" && !currentPath.endsWith("index.html")) {
-    console.log("检测到子页面刷新操作，重定向至首页后再返回");
+    console.log("Detected subpage refresh, redirecting to home first");
     
-    // 保存当前路径和滚动位置
-    const targetPath = window.location.pathname;
+    // Save current path and scroll position
     const scrollPosition = {
       x: window.scrollX,
       y: window.scrollY
     };
     
-    // 存储重定向信息
-    sessionStorage.setItem('redirectTarget', targetPath);
-    sessionStorage.setItem('scrollPosition', JSON.stringify(scrollPosition));
-    sessionStorage.setItem('isRefresh', 'true');
+    // Store redirection info
+    sessionStorage.setItem("redirectTarget", currentPath);
+    sessionStorage.setItem("scrollPosition", JSON.stringify(scrollPosition));
+    sessionStorage.setItem("isRefresh", "true");
     
-    // 跳转到首页
+    // Redirect to home
     window.location.href = "/";
     return;
   }
   
-  // 检查是否为子页面直接访问（非刷新情况）
+  // Handle direct subpage access (not via refresh)
   if (!isRefresh && currentPath !== "/" && !currentPath.endsWith("index.html")) {
-    console.log("子页面直接访问，使用传统导航");
+    console.log("Direct subpage access, checking layout integrity");
     
-    // === 关键修改：子页面访问时确保完整布局 ===
-    // 检查是否缺少主要布局元素
-    const mainContainer = document.querySelector(".layout--single");
-    const masthead = document.querySelector(".masthead");
-    const sidebar = document.querySelector(".sidebar");
+    // Check if essential layout elements exist
+    const hasCompleteLayout = (
+      document.querySelector(".layout--single") &&
+      document.querySelector(".masthead") &&
+      document.querySelector(".sidebar")
+    );
     
-    if (!mainContainer || !masthead || !sidebar) {
-      console.log("子页面访问时缺少布局，重定向到首页并带上目标路径");
+    if (!hasCompleteLayout) {
+      console.log("Missing layout elements, redirecting to home");
       
-      // 保存当前路径
-      const targetPath = window.location.pathname;
-      sessionStorage.setItem('redirectTarget', targetPath);
-      sessionStorage.setItem('isRefresh', 'false'); // 标记为非刷新重定向
+      // Save target path
+      sessionStorage.setItem("redirectTarget", currentPath);
+      sessionStorage.setItem("isRefresh", "false");
       
-      // 跳转到首页
+      // Redirect to home
       window.location.href = "/";
       return;
     }
     
-    // 处理样式一致性问题 - 确保子页面样式和主页一致
-    ensureConsistentStyle();
+    // Ensure consistent style for direct subpage access
+    setWhiteBackground();
     
-    // 初始化内容
+    // Initialize content and bind links
     if (mainContent) {
-      initContent();
+      initPageContent();
+      bindAllLinks();
     }
     
-    // 初始绑定链接
-    bindLinks();
-    
-    // 子页面使用传统导航，不启用SPA加载
+    // Continue with regular navigation
     return;
   }
   
-  // === 增强：首页加载时检查是否有重定向目标 ===
+  // Handle home page load with redirection
   if (currentPath === "/" || currentPath.endsWith("index.html")) {
-    const redirectTarget = sessionStorage.getItem('redirectTarget');
-    const isRefreshRedirect = sessionStorage.getItem('isRefresh') === 'true';
+    const redirectTarget = sessionStorage.getItem("redirectTarget");
+    const isRefreshRedirect = sessionStorage.getItem("isRefresh") === "true";
     
     if (redirectTarget) {
-      console.log(`检测到重定向目标: ${redirectTarget}, 刷新状态: ${isRefreshRedirect ? '刷新' : '常规'}`);
+      console.log(`Found redirect target: ${redirectTarget}, refresh state: ${isRefreshRedirect ? "refresh" : "regular"}`);
       
-      // 清除存储的目标和刷新状态
-      sessionStorage.removeItem('redirectTarget');
-      sessionStorage.removeItem('isRefresh');
+      // Clear stored data
+      sessionStorage.removeItem("redirectTarget");
+      sessionStorage.removeItem("isRefresh");
       
-      // 恢复滚动位置（如果有）
-      const savedScrollPosition = sessionStorage.getItem('scrollPosition');
+      // Restore scroll position if available
+      const savedScrollPosition = sessionStorage.getItem("scrollPosition");
       if (savedScrollPosition) {
         try {
           const position = JSON.parse(savedScrollPosition);
-          sessionStorage.removeItem('scrollPosition');
+          sessionStorage.removeItem("scrollPosition");
           
-          // 在页面跳转后恢复滚动位置
-          const restoreScroll = () => {
+          // Save scroll restoration function
+          window.restoreScrollPosition = () => {
             window.scrollTo(position.x, position.y);
-            console.log(`恢复滚动位置: (${position.x}, ${position.y})`);
+            console.log(`Restored scroll position: (${position.x}, ${position.y})`);
           };
-          
-          // 记录恢复滚动的函数，稍后执行
-          window.restoreScrollPosition = restoreScroll;
         } catch (e) {
-          console.error("解析滚动位置时出错:", e);
+          console.error("Error parsing scroll position:", e);
         }
       }
       
-      // 优先等待首页完全加载后再跳转
-      // 刷新操作使用稍长的延迟确保样式完全加载
-      const delay = isRefreshRedirect ? 500 : 300;
+      // Wait for homepage to fully load before redirecting
+      const delay = isRefreshRedirect ? 300 : 150;
       setTimeout(() => {
-        loadPage(redirectTarget, true); // 第二个参数表示这是重定向后的加载
+        loadPageContent(redirectTarget, true);
       }, delay);
     }
   }
   
-  // 没有主内容区域则退出
+  // Exit if no main content found
   if (!mainContent) {
-    console.error("无法找到.page__content，禁用SPA");
+    console.error("No .page__content found, disabling SPA");
     return;
   }
   
-  // 链接处理标记
-  const HANDLED_ATTR = "data-spa-link";
+  // Link handler marker attribute
+  const HANDLED_LINK_ATTR = "data-spa-handled";
   
-  // 确保样式一致性的函数
-  function ensureConsistentStyle() {
-    // 添加CSS样式确保页面背景为白色
-    const styleElement = document.createElement('style');
-    styleElement.textContent = `
-      body, .page__content, .layout--single {
-        background-color: #ffffff !important;
-      }
+  // Load page content without full refresh
+  function loadPageContent(url, isRedirectLoad = false) {
+    // Create loading indicator
+    const loadingIndicator = document.createElement("div");
+    loadingIndicator.textContent = "Loading...";
+    loadingIndicator.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 10px 20px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border-radius: 4px;
+      z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     `;
-    document.head.appendChild(styleElement);
+    document.body.appendChild(loadingIndicator);
     
-    // 检查并修复可能的布局问题
-    const layoutElement = document.querySelector('.layout--single');
-    if (layoutElement) {
-      layoutElement.style.backgroundColor = "#ffffff";
-    }
-  }
-  
-  // 增强的页面加载函数，支持刷新后恢复
-  function loadPage(url, isRedirectLoad = false) {
-    // 简单的加载指示
-    const loadingDiv = document.createElement("div");
-    loadingDiv.textContent = "Loading...";
-    loadingDiv.style.position = "fixed";
-    loadingDiv.style.top = "50%";
-    loadingDiv.style.left = "50%";
-    loadingDiv.style.transform = "translate(-50%, -50%)";
-    loadingDiv.style.padding = "10px";
-    loadingDiv.style.background = "rgba(0,0,0,0.5)";
-    loadingDiv.style.color = "white";
-    loadingDiv.style.borderRadius = "5px";
-    loadingDiv.style.zIndex = "9999";
-    document.body.appendChild(loadingDiv);
-    
-    // 获取页面
+    // Fetch page content
     fetch(url)
       .then(response => {
         if (!response.ok) {
-          throw new Error(`页面加载失败: ${response.status}`);
+          throw new Error(`Page load failed: ${response.status}`);
         }
         return response.text();
       })
@@ -178,335 +183,241 @@ document.addEventListener("DOMContentLoaded", function () {
         const newContent = doc.querySelector(".page__content");
         
         if (newContent) {
-          // 更新标题
+          // Update page title
           document.title = doc.title;
           
-          // === 关键修改：保留布局，只更新主内容 === 
+          // Update main content only
           mainContent.innerHTML = newContent.innerHTML;
           
-          // 更新URL (如果是重定向加载，使用replace而不是push，避免历史记录重复)
+          // Update URL (replace if redirect, push if normal navigation)
           if (isRedirectLoad) {
             history.replaceState({url: url}, document.title, url);
           } else {
             history.pushState({url: url}, document.title, url);
           }
           
-          // 初始化内容
-          initContent();
+          // Initialize new content
+          initPageContent();
           
-          // 重新绑定链接
-          bindLinks();
+          // Rebind all links
+          bindAllLinks();
           
-          // 如果需要恢复滚动位置
+          // Handle scroll position
           if (isRedirectLoad && window.restoreScrollPosition) {
             setTimeout(() => {
               window.restoreScrollPosition();
-              window.restoreScrollPosition = null; // 清除函数引用
+              window.restoreScrollPosition = null;
             }, 100);
           } else {
-            // 正常导航，回到顶部
+            // Regular navigation, scroll to top
             window.scrollTo(0, 0);
           }
         } else {
-          // 回退到传统导航
+          // Fallback to traditional navigation
           window.location.href = url;
         }
       })
       .catch(error => {
-        console.error("SPA加载错误:", error);
-        // 始终回退到传统导航
+        console.error("SPA load error:", error);
+        // Fallback to traditional navigation
         window.location.href = url;
       })
       .finally(() => {
-        // 移除加载指示
-        document.body.removeChild(loadingDiv);
+        // Remove loading indicator
+        document.body.removeChild(loadingIndicator);
       });
   }
   
-  // 初始化页面内容
-  function initContent() {
-    // 处理内联脚本
+  // Initialize page content
+  function initPageContent() {
+    // Execute inline scripts
     const scripts = mainContent.querySelectorAll("script");
     scripts.forEach(oldScript => {
       const newScript = document.createElement("script");
       
-      // 复制属性
+      // Copy attributes
       Array.from(oldScript.attributes).forEach(attr => {
         newScript.setAttribute(attr.name, attr.value);
       });
       
-      // 复制内容
+      // Copy content
       newScript.innerHTML = oldScript.innerHTML;
       
-      // 替换旧脚本
+      // Replace old script
       oldScript.parentNode.replaceChild(newScript, oldScript);
     });
     
-    // === 修复：彻底的地图初始化处理 ===
-    // 检查当前页面URL是否包含地图页面的标识
-    const isMapPage = window.location.pathname.includes('/travel') || 
-                      window.location.pathname.includes('/map') ||
-                      document.getElementById('travel-map') || 
-                      document.querySelector('.travel-map-container');
+    // Enhanced map handling
+    handleMapInitialization();
+    
+    // Trigger custom content update event
+    document.dispatchEvent(new CustomEvent("spa:contentUpdated", {
+      detail: { path: window.location.pathname }
+    }));
+    
+    // Ensure white background
+    setWhiteBackground();
+    
+    // Update sidebar active states
+    updateSidebarActiveState();
+  }
+  
+  // Update sidebar active state based on current path
+  function updateSidebarActiveState() {
+    const currentPath = window.location.pathname;
+    
+    document.querySelectorAll(".sidebar .nav__items a").forEach(link => {
+      const href = link.getAttribute("href");
+      const linkParent = link.parentElement;
+      
+      // Remove all active states
+      linkParent.classList.remove("active");
+      
+      // Set active state for current page
+      if (href && currentPath.includes(href) && href !== "/") {
+        linkParent.classList.add("active");
+      }
+    });
+  }
+  
+  // Advanced map initialization
+  function handleMapInitialization() {
+    // Check if current page contains map
+    const isMapPage = 
+      window.location.pathname.includes("/travel") || 
+      window.location.pathname.includes("/map") ||
+      document.getElementById("travel-map") || 
+      document.querySelector(".travel-map-container");
     
     if (isMapPage) {
-      console.log("检测到地图页面，准备多次尝试初始化地图...");
+      console.log("Map page detected, initializing map");
       
-      // 强制重新加载地图相关资源
-      function reloadMapResources() {
-        // 查找并重载地图相关的脚本
-        document.querySelectorAll('script').forEach(script => {
-          const src = script.getAttribute('src') || '';
-          if (src.includes('map') || src.includes('leaflet') || src.includes('travel')) {
-            console.log("重新加载地图相关脚本:", src);
-            const newScript = document.createElement('script');
-            Array.from(script.attributes).forEach(attr => {
-              if (attr.name !== 'src') { // 除了src之外的属性直接复制
-                newScript.setAttribute(attr.name, attr.value);
-              }
-            });
-            // 添加时间戳防止缓存
-            newScript.src = src.includes('?') ? 
-              `${src}&_t=${new Date().getTime()}` : 
-              `${src}?_t=${new Date().getTime()}`;
-            
-            // 替换旧脚本
-            if (script.parentNode) {
-              script.parentNode.replaceChild(newScript, script);
-            }
-          }
-        });
+      // Get map container
+      const mapContainer = document.getElementById("travel-map") || 
+                          document.querySelector(".travel-map-container");
+      
+      if (!mapContainer) {
+        console.warn("Map container not found");
+        return;
       }
       
-      // 执行地图初始化的函数
-      function executeMapInit() {
+      // Clean up existing map instance if present
+      if (mapContainer._leaflet_id) {
         try {
-          if (typeof window.initTravelMap === 'function') {
-            console.log("尝试初始化地图...");
-            
-            // 检查地图容器
-            const mapContainer = document.getElementById('travel-map') || document.querySelector('.travel-map-container');
-            if (!mapContainer) {
-              console.warn("未找到地图容器，无法初始化地图");
-              return false;
-            }
-            
-            // 重置地图容器内容，确保清除旧状态
-            if (mapContainer._leaflet) {
-              console.log("检测到Leaflet地图实例，移除旧实例");
-              mapContainer._leaflet.remove();
-            }
-            
-            // 强制重置容器样式和内容
-            const originalHTML = mapContainer.innerHTML;
-            const originalStyle = mapContainer.getAttribute('style') || '';
-            
-            // 设置最小高度以确保可见
-            mapContainer.style.minHeight = '400px';
-            mapContainer.style.display = 'block';
-            
-            // 执行初始化
-            window.initTravelMap();
-            
-            // 检查初始化后的状态
-            setTimeout(() => {
-              // 如果地图仍然为空，尝试恢复原始内容并重新初始化
-              if (!mapContainer._leaflet && !mapContainer.querySelector('.leaflet-container')) {
-                console.warn("地图初始化似乎失败，尝试恢复和重新初始化");
-                mapContainer.innerHTML = originalHTML;
-                mapContainer.setAttribute('style', originalStyle);
-                window.initTravelMap();
-              }
-            }, 300);
-            
-            return true;
-          } else {
-            console.warn("未找到initTravelMap函数");
-            return false;
+          if (window.L && window.L.DomUtil.get(mapContainer.id)._leaflet_id) {
+            window.L.DomUtil.get(mapContainer.id)._leaflet = null;
           }
         } catch (e) {
-          console.error("地图初始化出错:", e);
-          return false;
+          console.log("No existing Leaflet map to clean up");
         }
       }
       
-      // 多次尝试初始化地图，以不同的延迟
-      const initAttempts = [500, 1000, 2000, 3500];
-      let successfulInit = false;
+      // Ensure map container has proper dimensions
+      mapContainer.style.minHeight = "400px";
+      mapContainer.style.display = "block";
       
-      // 首先尝试重新加载地图资源
-      setTimeout(reloadMapResources, 200);
+      // Schedule multiple initialization attempts
+      const initAttempts = [100, 500, 1000, 2000];
       
-      // 然后在不同时间点尝试初始化
       initAttempts.forEach((delay, index) => {
         setTimeout(() => {
-          if (!successfulInit) {
-            console.log(`第${index + 1}次尝试初始化地图，延迟: ${delay}ms`);
-            successfulInit = executeMapInit();
-            
-            // 最后一次尝试如果仍然失败，考虑更极端的方法
-            if (!successfulInit && index === initAttempts.length - 1) {
-              console.warn("多次尝试后地图仍未初始化，尝试最后的恢复方法");
+          if (typeof window.initTravelMap === "function") {
+            try {
+              console.log(`Map initialization attempt ${index + 1}`);
+              window.initTravelMap();
+            } catch (e) {
+              console.error(`Map initialization error (attempt ${index + 1}):`, e);
               
-              // 尝试检测地图库是否存在
-              if (window.L && typeof window.L.map === 'function') {
-                console.log("检测到Leaflet库存在，尝试手动创建地图");
-                
-                const mapContainer = document.getElementById('travel-map') || document.querySelector('.travel-map-container');
-                if (mapContainer) {
-                  // 重置容器
-                  mapContainer.innerHTML = '';
+              // Last attempt fallback
+              if (index === initAttempts.length - 1 && window.L) {
+                console.log("Final attempt: Basic map initialization");
+                try {
+                  // Clear container
+                  mapContainer.innerHTML = "";
                   
-                  // 尝试创建基本地图
-                  try {
-                    const basicMap = window.L.map(mapContainer.id || 'travel-map').setView([20, 0], 2);
-                    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                      attribution: '© OpenStreetMap contributors'
-                    }).addTo(basicMap);
-                    console.log("成功创建基本地图");
-                    
-                    // 触发自定义事件通知地图已创建
-                    const mapCreatedEvent = new CustomEvent('spa:mapCreated', {
-                      detail: { map: basicMap }
-                    });
-                    document.dispatchEvent(mapCreatedEvent);
-                  } catch (e) {
-                    console.error("手动创建地图失败:", e);
-                  }
+                  // Create basic map
+                  const basicMap = window.L.map(mapContainer.id || "travel-map").setView([20, 0], 2);
+                  window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                    attribution: "© OpenStreetMap contributors"
+                  }).addTo(basicMap);
+                } catch (fallbackError) {
+                  console.error("Fallback map creation failed:", fallbackError);
                 }
               }
             }
           }
         }, delay);
       });
-    } else {
-      console.log("当前不是地图页面，跳过地图初始化");
     }
-    
-    // === 新增：触发自定义事件，通知页面内容已更新 ===
-    const contentUpdateEvent = new CustomEvent('spa:contentUpdated', {
-      detail: { path: window.location.pathname }
-    });
-    document.dispatchEvent(contentUpdateEvent);
-    
-    // 确保背景颜色为白色
-    document.body.style.backgroundColor = "#ffffff";
-    if (mainContent) {
-      mainContent.style.backgroundColor = "#ffffff";
-    }
-    
-    // === 关键修改：检查和修复边栏激活状态 ===
-    const currentPath = window.location.pathname;
-    document.querySelectorAll('.sidebar .nav__items a').forEach(link => {
-      const href = link.getAttribute('href');
-      // 清除所有激活状态
-      link.parentElement.classList.remove('active');
-      
-      // 为当前页面设置激活状态
-      if (href && currentPath.includes(href) && href !== '/') {
-        link.parentElement.classList.add('active');
-      }
-    });
   }
   
-  // 绑定所有内部链接
-  function bindLinks() {
+  // Bind all internal links
+  function bindAllLinks() {
     document.querySelectorAll('a[href^="/"]').forEach(link => {
-      // 跳过已处理链接
-      if (link.hasAttribute(HANDLED_ATTR)) return;
+      // Skip already processed links
+      if (link.hasAttribute(HANDLED_LINK_ATTR)) return;
       
-      const href = link.getAttribute('href');
+      const href = link.getAttribute("href");
       
-      // 跳过资源链接
-      if (href.match(/\.(pdf|zip|jpg|png|gif|svg)$/i)) return;
+      // Skip resource links
+      if (href.match(/\.(pdf|zip|jpg|png|gif|svg|mp4|webm)$/i)) return;
       
-      // 标记为已处理
-      link.setAttribute(HANDLED_ATTR, "true");
+      // Mark as handled
+      link.setAttribute(HANDLED_LINK_ATTR, "true");
       
-      // 添加点击处理
-      link.addEventListener('click', function(e) {
+      // Add click handler
+      link.addEventListener("click", function(e) {
         e.preventDefault();
-        loadPage(href);
+        loadPageContent(href);
       });
     });
   }
   
-  // 处理后退按钮
-  window.addEventListener('popstate', function(event) {
+  // Handle browser back/forward buttons
+  window.addEventListener("popstate", function(event) {
     if (event.state && event.state.url) {
-      loadPage(event.state.url);
+      loadPageContent(event.state.url);
     } else {
-      loadPage(window.location.pathname);
+      loadPageContent(window.location.pathname);
     }
   });
   
-  // 初始绑定链接
-  bindLinks();
+  // Initial link binding
+  bindAllLinks();
   
-  // === 新增：更强大的地图初始化监听 ===
-  document.addEventListener('spa:needMapInit', function() {
-    if (typeof window.initTravelMap === 'function') {
-      console.log("收到地图初始化请求");
-      
-      const mapContainer = document.getElementById('travel-map') || document.querySelector('.travel-map-container');
-      if (mapContainer) {
-        // 清除可能存在的旧地图实例
-        if (mapContainer._leaflet) {
-          try {
-            mapContainer._leaflet.remove();
-          } catch (e) {
-            console.error("移除旧地图实例失败:", e);
-          }
-        }
-        
-        // 尝试多次初始化
-        [100, 500, 1000].forEach(delay => {
-          setTimeout(() => {
-            try {
-              window.initTravelMap();
-            } catch (e) {
-              console.error(`延迟${delay}ms初始化地图失败:`, e);
-            }
-          }, delay);
-        });
-      } else {
-        console.warn("找不到地图容器，无法响应初始化请求");
-      }
-    }
-  });
-  
-  // === 新增：MutationObserver监控DOM变化，自动检测地图容器 ===
-  const mapObserver = new MutationObserver((mutations) => {
-    // 检查是否有地图容器被添加到DOM中
+  // Map initialization observer
+  const mapObserver = new MutationObserver(mutations => {
     for (const mutation of mutations) {
-      if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+      if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+        // Check if map container was added
         const hasMapContainer = Array.from(mutation.addedNodes).some(node => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            // 检查节点本身
-            if (node.id === 'travel-map' || node.classList.contains('travel-map-container')) {
-              return true;
-            }
-            // 检查子节点
-            if (node.querySelector && (
-              node.querySelector('#travel-map') || 
-              node.querySelector('.travel-map-container')
-            )) {
-              return true;
-            }
+          if (node.nodeType !== Node.ELEMENT_NODE) return false;
+          
+          if (node.id === "travel-map" || node.classList?.contains("travel-map-container")) {
+            return true;
           }
-          return false;
+          
+          return node.querySelector && (
+            node.querySelector("#travel-map") || 
+            node.querySelector(".travel-map-container")
+          );
         });
         
         if (hasMapContainer) {
-          console.log("检测到地图容器被添加到DOM，尝试初始化地图");
-          document.dispatchEvent(new CustomEvent('spa:needMapInit'));
+          console.log("Map container detected in DOM, initializing");
+          handleMapInitialization();
           break;
         }
       }
     }
   });
   
-  // 开始观察整个文档的变化
+  // Start observing DOM for map container
   mapObserver.observe(document.body, { childList: true, subtree: true });
-});
+  
+  // Listen for custom map initialization requests
+  document.addEventListener("spa:needMapInit", function() {
+    console.log("Map initialization requested");
+    handleMapInitialization();
+  });
 });
