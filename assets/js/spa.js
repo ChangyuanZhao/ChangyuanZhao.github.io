@@ -150,8 +150,30 @@ document.addEventListener("DOMContentLoaded", function () {
   // Link handler marker attribute
   const HANDLED_LINK_ATTR = "data-spa-handled";
   
+  // Keep track of page transitions
+  let isMapPage = false;
+  let pendingMapInitialization = false;
+  
+  // Pre-process URL to determine if it's a map page
+  function isUrlMapPage(url) {
+    return url.includes("/travel") || url.includes("/map");
+  }
+  
   // Load page content without full refresh
   function loadPageContent(url, isRedirectLoad = false) {
+    // Check if we're navigating to or from a map page
+    const wasMapPage = isMapPage;
+    const willBeMapPage = isUrlMapPage(url);
+    
+    // Update map page status for next time
+    isMapPage = willBeMapPage;
+    
+    // Special handling for map page transitions
+    if (willBeMapPage) {
+      console.log("Navigating to map page - preparing special handling");
+      pendingMapInitialization = true;
+    }
+    
     // Create loading indicator
     const loadingIndicator = document.createElement("div");
     loadingIndicator.textContent = "Loading...";
@@ -168,6 +190,11 @@ document.addEventListener("DOMContentLoaded", function () {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     `;
     document.body.appendChild(loadingIndicator);
+    
+    // Pre-load map resources if navigating to map page
+    if (willBeMapPage && !wasMapPage) {
+      preloadMapResources();
+    }
     
     // Fetch page content
     fetch(url)
@@ -186,6 +213,9 @@ document.addEventListener("DOMContentLoaded", function () {
           // Update page title
           document.title = doc.title;
           
+          // Check for map scripts in the new content
+          const hasMapScripts = extractAndPreserveMapScripts(doc);
+          
           // Update main content only
           mainContent.innerHTML = newContent.innerHTML;
           
@@ -198,6 +228,41 @@ document.addEventListener("DOMContentLoaded", function () {
           
           // Initialize new content
           initPageContent();
+          
+          // Special handling for map pages
+          if (willBeMapPage) {
+            // Inject preserved map scripts if found
+            if (hasMapScripts) {
+              injectPreservedMapScripts();
+            }
+            
+            // Double-check map initialization with multiple attempts
+            const mapCheckAttempts = [300, 600, 1000, 1500];
+            mapCheckAttempts.forEach(delay => {
+              setTimeout(() => {
+                if (pendingMapInitialization) {
+                  console.log(`Checking map initialization status after ${delay}ms`);
+                  const mapContainer = document.getElementById("travel-map") || 
+                                      document.querySelector(".travel-map-container");
+                  
+                  if (mapContainer) {
+                    // Check if map is already initialized
+                    const isMapInitialized = mapContainer._leaflet || 
+                                            mapContainer.querySelector('.leaflet-container') ||
+                                            (mapContainer.childNodes && mapContainer.childNodes.length > 1);
+                    
+                    if (!isMapInitialized) {
+                      console.log(`Map not initialized after ${delay}ms, attempting initialization`);
+                      handleMapInitialization();
+                    } else {
+                      console.log(`Map already initialized after ${delay}ms`);
+                      pendingMapInitialization = false;
+                    }
+                  }
+                }
+              }, delay);
+            });
+          }
           
           // Rebind all links
           bindAllLinks();
@@ -226,6 +291,117 @@ document.addEventListener("DOMContentLoaded", function () {
         // Remove loading indicator
         document.body.removeChild(loadingIndicator);
       });
+  }
+  
+  // Store for map scripts
+  let preservedMapScripts = [];
+  
+  // Extract and preserve map scripts from a document
+  function extractAndPreserveMapScripts(doc) {
+    preservedMapScripts = [];
+    const scripts = doc.querySelectorAll("script");
+    
+    scripts.forEach(script => {
+      const src = script.getAttribute('src') || '';
+      const content = script.innerHTML;
+      
+      // Check if it's a map-related script
+      const isMapScript = 
+        src.includes('map') || 
+        src.includes('leaflet') || 
+        src.includes('travel') ||
+        content.includes('map') ||
+        content.includes('initTravelMap');
+      
+      if (isMapScript) {
+        console.log("Found map script:", src || "(inline script)");
+        preservedMapScripts.push({
+          src: src,
+          content: content,
+          async: script.async,
+          defer: script.defer,
+          type: script.type || "text/javascript"
+        });
+      }
+    });
+    
+    return preservedMapScripts.length > 0;
+  }
+  
+  // Inject preserved map scripts
+  function injectPreservedMapScripts() {
+    console.log(`Injecting ${preservedMapScripts.length} preserved map scripts`);
+    
+    preservedMapScripts.forEach((scriptInfo, index) => {
+      const script = document.createElement("script");
+      
+      if (scriptInfo.type) script.type = scriptInfo.type;
+      if (scriptInfo.async) script.async = true;
+      if (scriptInfo.defer) script.defer = true;
+      
+      if (scriptInfo.src) {
+        // Add timestamp to prevent caching
+        script.src = scriptInfo.src.includes('?') ? 
+          `${scriptInfo.src}&_t=${new Date().getTime()}` : 
+          `${scriptInfo.src}?_t=${new Date().getTime()}`;
+      } else {
+        script.innerHTML = scriptInfo.content;
+      }
+      
+      // Add load listener for the last external script
+      if (scriptInfo.src && index === preservedMapScripts.length - 1) {
+        script.onload = () => {
+          console.log("Final map script loaded, initializing map");
+          setTimeout(() => handleMapInitialization(), 100);
+        };
+      }
+      
+      document.head.appendChild(script);
+    });
+    
+    // If all scripts were inline, manually trigger map initialization
+    const hasExternalScripts = preservedMapScripts.some(s => s.src);
+    if (!hasExternalScripts) {
+      console.log("No external map scripts, scheduling initialization");
+      setTimeout(() => handleMapInitialization(), 200);
+    }
+  }
+  
+  // Preload map resources
+  function preloadMapResources() {
+    console.log("Preloading map resources");
+    
+    // Preload common map resources 
+    const resources = [
+      "https://unpkg.com/leaflet@1.7.1/dist/leaflet.css",
+      "https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    ];
+    
+    resources.forEach(url => {
+      const isCSS = url.endsWith('.css');
+      
+      if (isCSS) {
+        // Preload CSS
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'style';
+        link.href = url;
+        document.head.appendChild(link);
+        
+        // Actually load the CSS
+        const styleLink = document.createElement('link');
+        styleLink.rel = 'stylesheet';
+        styleLink.href = url;
+        document.head.appendChild(styleLink);
+      } else {
+        // Preload JS
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'script';
+        link.href = url;
+        document.head.appendChild(link);
+      }
+    });
   }
   
   // Initialize page content
@@ -298,55 +474,209 @@ document.addEventListener("DOMContentLoaded", function () {
       
       if (!mapContainer) {
         console.warn("Map container not found");
+        // Defer search for map container
+        setTimeout(() => {
+          const laterMapContainer = document.getElementById("travel-map") || 
+                                   document.querySelector(".travel-map-container");
+          if (laterMapContainer) {
+            console.log("Map container found on delayed check");
+            initMapWithContainer(laterMapContainer);
+          } else {
+            // Add a placeholder and try again
+            const contentArea = document.querySelector(".page__content");
+            if (contentArea && !document.getElementById("travel-map-placeholder")) {
+              console.log("Adding map placeholder to trigger initialization");
+              const placeholder = document.createElement("div");
+              placeholder.id = "travel-map-placeholder";
+              placeholder.className = "travel-map-container";
+              placeholder.style.minHeight = "400px";
+              placeholder.style.display = "block";
+              placeholder.style.backgroundColor = "#f8f8f8";
+              placeholder.style.border = "1px dashed #ccc";
+              placeholder.innerHTML = "<p style='text-align:center;padding-top:180px;'>Map loading...</p>";
+              contentArea.prepend(placeholder);
+              
+              setTimeout(() => initMapWithContainer(placeholder), 300);
+            }
+          }
+        }, 300);
         return;
       }
       
-      // Clean up existing map instance if present
-      if (mapContainer._leaflet_id) {
-        try {
-          if (window.L && window.L.DomUtil.get(mapContainer.id)._leaflet_id) {
-            window.L.DomUtil.get(mapContainer.id)._leaflet = null;
+      initMapWithContainer(mapContainer);
+    }
+  }
+  
+  // Separate function to initialize map with a container
+  function initMapWithContainer(mapContainer) {
+    // Force reload map-related scripts
+    const reloadMapScripts = () => {
+      document.querySelectorAll('script').forEach(script => {
+        const src = script.getAttribute('src') || '';
+        if (src && (src.includes('map') || src.includes('leaflet') || src.includes('travel'))) {
+          console.log("Reloading map script:", src);
+          
+          // Create a new script element
+          const newScript = document.createElement('script');
+          
+          // Copy attributes except src
+          Array.from(script.attributes).forEach(attr => {
+            if (attr.name !== 'src') {
+              newScript.setAttribute(attr.name, attr.value);
+            }
+          });
+          
+          // Add timestamp to prevent caching
+          newScript.src = src.includes('?') ? 
+            `${src}&_t=${new Date().getTime()}` : 
+            `${src}?_t=${new Date().getTime()}`;
+          
+          // Replace old script if possible
+          if (script.parentNode) {
+            script.parentNode.replaceChild(newScript, script);
+          } else {
+            // Or append to head
+            document.head.appendChild(newScript);
           }
-        } catch (e) {
-          console.log("No existing Leaflet map to clean up");
+        }
+      });
+    };
+    
+    // Try to clean up existing map instance
+    try {
+      if (mapContainer._leaflet_id || mapContainer._leaflet) {
+        console.log("Cleaning up existing map instance");
+        if (window.L && mapContainer._leaflet) {
+          mapContainer._leaflet.remove();
+        } else if (window.L && window.L.DomUtil.get(mapContainer.id)) {
+          const mapInstance = window.L.DomUtil.get(mapContainer.id);
+          if (mapInstance._leaflet_id) {
+            mapInstance._leaflet = null;
+          }
         }
       }
+    } catch (e) {
+      console.log("No existing Leaflet map to clean up");
+    }
+    
+    // Ensure map container has proper dimensions
+    mapContainer.style.minHeight = "400px";
+    mapContainer.style.display = "block";
+    
+    // First try to reload map scripts
+    reloadMapScripts();
+    
+    // Check if Leaflet is already loaded
+    const isLeafletLoaded = () => {
+      return typeof window.L !== 'undefined' && typeof window.L.map === 'function';
+    };
+    
+    // Load Leaflet dynamically if needed
+    const ensureLeaflet = (callback) => {
+      if (isLeafletLoaded()) {
+        callback();
+        return;
+      }
       
-      // Ensure map container has proper dimensions
-      mapContainer.style.minHeight = "400px";
-      mapContainer.style.display = "block";
+      console.log("Leaflet not found, loading dynamically");
       
-      // Schedule multiple initialization attempts
-      const initAttempts = [100, 500, 1000, 2000];
+      // Load CSS
+      const leafletCss = document.createElement('link');
+      leafletCss.rel = 'stylesheet';
+      leafletCss.href = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css';
+      document.head.appendChild(leafletCss);
       
-      initAttempts.forEach((delay, index) => {
-        setTimeout(() => {
-          if (typeof window.initTravelMap === "function") {
-            try {
-              console.log(`Map initialization attempt ${index + 1}`);
-              window.initTravelMap();
-            } catch (e) {
-              console.error(`Map initialization error (attempt ${index + 1}):`, e);
-              
-              // Last attempt fallback
-              if (index === initAttempts.length - 1 && window.L) {
-                console.log("Final attempt: Basic map initialization");
-                try {
-                  // Clear container
-                  mapContainer.innerHTML = "";
-                  
-                  // Create basic map
-                  const basicMap = window.L.map(mapContainer.id || "travel-map").setView([20, 0], 2);
-                  window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                    attribution: "© OpenStreetMap contributors"
-                  }).addTo(basicMap);
-                } catch (fallbackError) {
-                  console.error("Fallback map creation failed:", fallbackError);
-                }
+      // Load JS
+      const leafletJs = document.createElement('script');
+      leafletJs.src = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js';
+      leafletJs.onload = callback;
+      document.head.appendChild(leafletJs);
+    };
+    
+    // Schedule multiple initialization attempts with increasing delays
+    const initAttempts = [100, 300, 600, 1000, 2000, 3000];
+    let mapInitialized = false;
+    
+    initAttempts.forEach((delay, index) => {
+      setTimeout(() => {
+        // Skip if already initialized
+        if (mapInitialized) return;
+        
+        // Check if initTravelMap function exists
+        if (typeof window.initTravelMap === "function") {
+          try {
+            console.log(`Map initialization attempt ${index + 1}`);
+            window.initTravelMap();
+            
+            // Check if initialization was successful
+            setTimeout(() => {
+              if (mapContainer._leaflet || 
+                  mapContainer.querySelector('.leaflet-container') ||
+                  (mapContainer.childNodes && mapContainer.childNodes.length > 1)) {
+                console.log("Map successfully initialized");
+                mapInitialized = true;
+              } else if (index === initAttempts.length - 2) {
+                // Penultimate attempt failed, try Leaflet backup
+                useLeafletBackup();
               }
+            }, 200);
+          } catch (e) {
+            console.error(`Map initialization error (attempt ${index + 1}):`, e);
+            
+            // Last attempt fallback
+            if (index === initAttempts.length - 1) {
+              useLeafletBackup();
             }
           }
-        }, delay);
+        } else if (index === initAttempts.length - 1) {
+          // Final attempt with Leaflet backup
+          useLeafletBackup();
+        }
+      }, delay);
+    });
+    
+    // Leaflet backup function
+    function useLeafletBackup() {
+      if (mapInitialized) return;
+      
+      ensureLeaflet(() => {
+        console.log("Using Leaflet backup initialization");
+        try {
+          // Clear container
+          const currentContent = mapContainer.innerHTML;
+          mapContainer.innerHTML = "";
+          
+          if (window.L) {
+            // Create basic map
+            const basicMap = window.L.map(mapContainer.id || mapContainer).setView([20, 0], 2);
+            window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+              attribution: "© OpenStreetMap contributors"
+            }).addTo(basicMap);
+            
+            console.log("Created basic map with Leaflet");
+            mapInitialized = true;
+            
+            // Add custom event
+            document.dispatchEvent(new CustomEvent('spa:mapCreated', {
+              detail: { map: basicMap }
+            }));
+            
+            // If custom init exists, try to use it
+            if (window.customMapInit && typeof window.customMapInit === 'function') {
+              try {
+                window.customMapInit(basicMap);
+              } catch (e) {
+                console.error("Custom map initialization failed:", e);
+              }
+            }
+          } else {
+            // If Leaflet failed to load, restore original content
+            console.error("Leaflet failed to load, restoring original content");
+            mapContainer.innerHTML = currentContent;
+          }
+        } catch (fallbackError) {
+          console.error("Leaflet backup failed:", fallbackError);
+        }
       });
     }
   }
