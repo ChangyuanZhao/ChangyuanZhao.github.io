@@ -21,7 +21,7 @@ min_content_height_4k: 1200px # 4K显示器
 
 - *University of Science and Technology of China, China* <br/>
 **B.Sc., Sept. 2016 – Jun. 2020**  
-◦ Supervised by Prof. Bai Xue
+
 
   
 
