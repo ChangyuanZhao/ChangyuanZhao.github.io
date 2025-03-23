@@ -6,8 +6,6 @@ excerpt: ""
 author_profile: true
 ---
 
-<div style="border: 2px dashed red; padding: 20px; max-width: 800px; margin: auto;">
-
 
 
 # 📖 Educations
@@ -29,4 +27,3 @@ author_profile: true
 - *2024.11* One project received an Honorable Mention in the 2024 ComSoc Student Competition *"Communications Technology Changing the World"*, ranking among the top 16 out of 93 submissions.
 
 
-</div>
