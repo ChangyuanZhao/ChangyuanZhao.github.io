@@ -990,4 +990,84 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Map initialization requested");
     handleMapInitialization();
   });
+  function scrollToAnchor(url) {
+  // Extract the hash part from the URL
+  const hash = url.includes('#') ? url.substring(url.indexOf('#')) : null;
+  
+  if (hash) {
+    console.log(`Scrolling to anchor: ${hash}`);
+    
+    // Try to find the element with this ID
+    const targetElement = document.querySelector(hash);
+    
+    if (targetElement) {
+      // Give time for the page to render properly
+      setTimeout(() => {
+        targetElement.scrollIntoView({ behavior: 'smooth' });
+        console.log(`Scrolled to element with ID ${hash}`);
+      }, 200);
+    } else {
+      console.warn(`Element with ID ${hash} not found`);
+      
+      // Try looking for elements with data-section-id
+      const dataTargets = document.querySelectorAll(`[data-section-id="${hash.substring(1)}"]`);
+      if (dataTargets.length > 0) {
+        setTimeout(() => {
+          dataTargets[0].scrollIntoView({ behavior: 'smooth' });
+          console.log(`Scrolled to element with data-section-id ${hash.substring(1)}`);
+        }, 200);
+      }
+    }
+  }
+}
+
+// Modify the loadPageContent function to handle anchor links
+// Inside your loadPageContent function, after updating the URL 
+// and before the final else block, add this code block:
+
+// Update URL (replace if redirect, push if normal navigation)
+if (isRedirectLoad) {
+  history.replaceState({url: url}, document.title, url);
+} else {
+  history.pushState({url: url}, document.title, url);
+}
+
+// Initialize new content
+initPageContent();
+
+// Check for anchor in the URL and scroll to it if present
+if (url.includes('#')) {
+  scrollToAnchor(url);
+}
+
+// Also modify the bindAllLinks function to handle anchor links to the same page
+function bindAllLinks() {
+  document.querySelectorAll('a[href^="/"]').forEach(link => {
+    // Skip already processed links
+    if (link.hasAttribute(HANDLED_LINK_ATTR)) return;
+    
+    const href = link.getAttribute("href");
+    
+    // Skip resource links
+    if (href.match(/\.(pdf|zip|jpg|png|gif|svg|mp4|webm)$/i)) return;
+    
+    // Mark as handled
+    link.setAttribute(HANDLED_LINK_ATTR, "true");
+    
+    // Add click handler
+    link.addEventListener("click", function(e) {
+      e.preventDefault();
+      
+      // Check if this is just an anchor link to the current page
+      if (href.startsWith('/#') && (window.location.pathname === '/' || window.location.pathname.endsWith('index.html'))) {
+        // Just scroll to the anchor on the same page
+        history.pushState({url: href}, document.title, href);
+        scrollToAnchor(href);
+      } else {
+        // Navigate to a different page
+        loadPageContent(href);
+      }
+    });
+  });
+}
 });
