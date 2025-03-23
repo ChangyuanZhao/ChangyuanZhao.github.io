@@ -50,6 +50,11 @@ layout: compress
       min-height: calc(100vh - 100px);
     }
     
+    /* 添加一个固定高度的内容容器类 */
+    .fixed-height-content {
+      min-height: {{ page.min_content_height | default: '800px' }};
+    }
+    
     /* 在移动设备上调整样式 */
     @media screen and (max-width: 767px) {
       .sidebar {
@@ -82,7 +87,7 @@ layout: compress
         {% endif %}
         
         <div class="page__inner-wrap" id="main-content">
-          <section class="page__content" itemprop="text">
+          <section class="page__content fixed-height-content" itemprop="text">
             {{ content }}
           </section>
         </div>
@@ -95,51 +100,55 @@ layout: compress
     <!-- 添加确保布局一致性的脚本 -->
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        // 计算并设置一致的高度
-        function setConsistentHeight() {
-          const sidebar = document.querySelector('.sidebar');
-          const pageContent = document.querySelector('.page');
-          const mainContainer = document.getElementById('main');
-          const masthead = document.querySelector('.masthead');
-          
-          if (sidebar && pageContent && masthead && window.innerWidth > 767) {
-            // 获取视窗高度和导航栏高度
-            const viewportHeight = window.innerHeight;
-            const mastheadHeight = masthead.offsetHeight;
-            
-            // 设置主容器最小高度
-            const mainMinHeight = viewportHeight - mastheadHeight - 40; // 减去一些边距
-            mainContainer.style.minHeight = `${mainMinHeight}px`;
-            
-            // 设置内容区域最小高度，确保与侧边栏一致
-            const contentMinHeight = mainMinHeight;
-            pageContent.style.minHeight = `${contentMinHeight}px`;
-          }
-        }
+        // 使用固定的最小高度，避免动态计算可能导致的跳动
+        const fixedMinHeight = '800px'; // 可以根据实际需要调整
         
-        // 初始设置
-        setConsistentHeight();
-        
-        // 窗口大小变化时重新计算
-        window.addEventListener('resize', setConsistentHeight);
-        
-        // 页面加载完成后再次检查（处理可能的图片加载导致的高度变化）
-        window.addEventListener('load', setConsistentHeight);
-        
-        // 监听内容变化，确保高度一致性
-        const contentObserver = new MutationObserver(function(mutations) {
-          // 使用setTimeout给DOM有时间更新
-          setTimeout(setConsistentHeight, 100);
-        });
-        
+        // 获取内容区域元素
         const contentArea = document.querySelector('.page__content');
         if (contentArea) {
-          contentObserver.observe(contentArea, {
+          // 确保固定高度样式被应用
+          contentArea.style.minHeight = fixedMinHeight;
+        }
+        
+        // 监听DOM变化，确保样式被保持
+        const observer = new MutationObserver(function(mutations) {
+          const updatedContentArea = document.querySelector('.page__content');
+          if (updatedContentArea) {
+            updatedContentArea.style.minHeight = fixedMinHeight;
+          }
+        });
+        
+        // 监听主内容容器的变化
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) {
+          observer.observe(mainContent, {
             childList: true,
-            subtree: true,
-            attributes: true
+            subtree: true
           });
         }
+        
+        // 监听整个主容器的变化
+        const mainContainer = document.getElementById('main');
+        if (mainContainer) {
+          observer.observe(mainContainer, {
+            childList: true,
+            subtree: false
+          });
+        }
+        
+        // 拦截a标签点击，确保SPA加载后内容高度一致
+        document.addEventListener('click', function(e) {
+          const linkElement = e.target.closest('a');
+          if (linkElement && !linkElement.getAttribute('target') && linkElement.getAttribute('href')) {
+            // 延迟执行以给SPA足够时间加载内容
+            setTimeout(function() {
+              const updatedContentArea = document.querySelector('.page__content');
+              if (updatedContentArea) {
+                updatedContentArea.style.minHeight = fixedMinHeight;
+              }
+            }, 100);
+          }
+        });
       });
     </script>
   </body>
