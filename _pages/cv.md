@@ -27,7 +27,3 @@ author_profile: true
 - *2024.11* One project received an Honorable Mention in the 2024 ComSoc Student Competition *"Communications Technology Changing the World"*, ranking among the top 16 out of 93 submissions.
 
 
-<div class="paper-box" style="margin-bottom: 1.2em; width: 100%; max-width: 90vw; margin-left: auto; margin-right: auto;">
-  <div class="paper-box-text" style="font-size: 0.95em; line-height: 1.5; width: 100%;">
-  </div>
-</div>
