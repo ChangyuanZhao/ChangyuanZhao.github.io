@@ -609,26 +609,292 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("Intercepting original map initialization function");
       window.mapDataCache.originalInitFunction = window.initTravelMap;
       
-      window.initTravelMap = function() {
-        console.log("Enhanced map initialization function called");
+      // 修改地图初始化函数以与SPA系统更好地集成
+window.initTravelMap = function() {
+  console.log("SPA环境: 初始化旅行地图");
+  
+  // 检查地图容器是否存在
+  const mapContainer = document.getElementById('travel-map');
+  if (!mapContainer) {
+    console.log("地图容器不存在，跳过初始化");
+    return;
+  }
+  
+  // 确保Leaflet库已加载
+  if (typeof L === 'undefined') {
+    console.error("Leaflet库未加载，无法初始化地图");
+    return;
+  }
+  
+  // 先销毁现有地图实例(如果有)
+  if (window.travelMap) {
+    console.log("销毁现有地图实例");
+    window.travelMap.remove();
+    window.travelMap = null;
+  }
+  
+  console.log("创建新地图实例");
+  // 初始化地图
+  const map = L.map('travel-map').setView([30, 105], 2);
+  window.travelMap = map;
+  
+  // 添加瓦片图层
+  try {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 10,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+  } catch (e) {
+    console.error("主要瓦片源加载失败，尝试备用源", e);
+    
+    // 备用瓦片源
+    L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
+      maxZoom: 10,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+  }
+  
+  // 尝试获取旅行数据 - 在SPA环境中需要特殊处理
+  let travelData = [];
+  
+  // 数据源优先级:
+  // 1. 全局变量 window.siteData.travelCities
+  // 2. 缓存在 window.mapDataCache 中的数据
+  // 3. 内置备用数据
+  
+  if (window.siteData && window.siteData.travelCities) {
+    travelData = window.siteData.travelCities;
+    console.log("从全局变量加载旅行数据:", travelData.length, "个城市");
+  } else if (window.mapDataCache && window.mapDataCache.initialized && window.mapDataCache.markers) {
+    // 尝试从SPA的缓存中恢复数据
+    console.log("尝试从SPA缓存恢复数据");
+    
+    // 将缓存的标记转换回旅行数据
+    try {
+      const markers = window.mapDataCache.markers || [];
+      travelData = markers.map(marker => {
+        // 尝试从popup内容中提取信息
+        const popupContent = marker.popupContent || "";
+        let cityName = "Unknown City";
+        let visits = [];
         
-        try {
-          // Call the original function
-          window.mapDataCache.originalInitFunction.apply(this, arguments);
-          
-          // After initialization, capture map data if not already cached
-          setTimeout(() => {
-            captureMapData(mapContainer);
-          }, 500);
-        } catch (e) {
-          console.error("Error in enhanced map initialization:", e);
-          
-          // Fallback to direct Leaflet initialization if original function fails
-          if (!mapContainer._leaflet) {
-            createLeafletMap(mapContainer);
-          }
+        // 提取城市名称
+        const cityMatch = popupContent.match(/<strong>(.*?)<\/strong>/);
+        if (cityMatch && cityMatch[1]) {
+          cityName = cityMatch[1];
         }
-      };
+        
+        // 尝试提取访问信息
+        const visitMatches = popupContent.match(/<li>(.*?)<\/li>/g);
+        if (visitMatches) {
+          visits = visitMatches.map(m => {
+            return m.replace(/<li>(.*?)<\/li>/, '$1');
+          });
+        }
+        
+        return {
+          city: cityName,
+          lat: marker.latLng.lat,
+          lon: marker.latLng.lng,
+          visits: visits
+        };
+      });
+      
+      if (travelData.length > 0) {
+        console.log("成功从SPA缓存恢复数据:", travelData.length, "个城市");
+      } else {
+        console.warn("SPA缓存数据转换未生成有效数据");
+      }
+    } catch (e) {
+      console.error("从SPA缓存恢复数据失败:", e);
+    }
+  }
+  
+  // 如果前两种方法都失败，使用内置备用数据
+  if (!travelData || travelData.length === 0) {
+    console.warn("找不到全局旅行数据，使用内置备用数据");
+    
+    // 内置备用数据
+    travelData = [
+      {
+        "city": "Beijing",
+        "lat": 39.9042,
+        "lon": 116.4074,
+        "visits": ["2025-02-28"]
+      },
+      {
+        "city": "Dalian",
+        "lat": 38.9140,
+        "lon": 121.6147,
+        "visits": ["2025-03-02"]
+      },
+      {
+        "city": "Suwon",
+        "lat": 37.2636,
+        "lon": 127.0286,
+        "visits": ["2025-03-04"]
+      },
+      {
+        "city": "Seoul",
+        "lat": 37.5665,
+        "lon": 126.9780,
+        "visits": ["2025-03-09"]
+      },
+      {
+        "city": "Singapore",
+        "lat": 1.3521,
+        "lon": 103.8198,
+        "visits": ["2025-03-14", "2025-01-10", "2024-12-20"]
+      },
+      {
+        "city": "Johor Bahru",
+        "lat": 1.4927,
+        "lon": 103.7414,
+        "visits": ["2025-01-29"]
+      },
+      {
+        "city": "Hong Kong",
+        "lat": 22.3193,
+        "lon": 114.1694,
+        "visits": ["2024-12-16"]
+      },
+      {
+        "city": "Bangkok",
+        "lat": 13.7563,
+        "lon": 100.5018,
+        "visits": ["2024-12-26"]
+      },
+      {
+        "city": "Xi'an",
+        "lat": 34.3416,
+        "lon": 108.9398,
+        "visits": ["2024-12-29"]
+      }
+    ];
+    
+    console.log("已加载内置备用数据:", travelData.length, "个城市");
+  }
+  
+  // 更新SPA缓存的标记数据，确保下次切换页面时数据可用
+  window.mapDataCache = window.mapDataCache || {};
+  window.mapDataCache.initialized = true;
+  
+  // 处理旅行数据并添加标记
+  travelData.forEach(entry => {
+    if (!entry.visits || !Array.isArray(entry.visits)) {
+      console.error("城市数据格式错误:", entry);
+      return;
+    }
+    
+    const totalVisits = entry.visits.length;
+    const recentVisits = entry.visits.slice(0, Math.min(5, totalVisits)).reverse();
+    
+    const popupContent = `
+      <strong>${entry.city}</strong><br/>
+      🧭 Total trips: ${totalVisits}<br/>
+      🕒 Most recent ${recentVisits.length} trips:<br/>
+      <ul style="padding-left: 16px; margin: 5px 0;">
+        ${recentVisits.map(date => `<li>${date}</li>`).join("")}
+      </ul>
+    `;
+    
+    // 根据访问次数调整圆点大小
+    const baseSize = 3;
+    const growthFactor = 0.7;
+    const maxVisitsForSize = 8;
+    const effectiveVisits = Math.min(totalVisits, maxVisitsForSize);
+    const radius = baseSize + effectiveVisits * growthFactor;
+    
+    L.circleMarker([entry.lat, entry.lon], {
+      radius: radius,
+      fillColor: "#d62728",
+      color: "#b22222",
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.7
+    }).bindPopup(popupContent).addTo(map);
+  });
+  
+  // 更新统计数字
+  const totalCitiesElement = document.getElementById('total-cities');
+  const totalVisitsElement = document.getElementById('total-visits');
+  
+  if (travelData.length > 0) {
+    // 城市总数
+    if (totalCitiesElement) {
+      totalCitiesElement.textContent = travelData.length;
+      console.log("更新城市总数:", travelData.length);
+    } else {
+      console.error("找不到 'total-cities' 元素");
+    }
+    
+    // 访问总次数
+    let totalVisits = 0;
+    travelData.forEach(entry => {
+      if (entry.visits && Array.isArray(entry.visits)) {
+        totalVisits += entry.visits.length;
+      }
+    });
+    
+    if (totalVisitsElement) {
+      totalVisitsElement.textContent = totalVisits;
+      console.log("更新访问总次数:", totalVisits);
+    } else {
+      console.error("找不到 'total-visits' 元素");
+    }
+  } else {
+    console.warn("无旅行数据，无法更新统计数字");
+  }
+  
+  // 强制刷新地图布局
+  setTimeout(function() {
+    if (map) {
+      map.invalidateSize();
+      console.log("刷新地图布局");
+    }
+  }, 100);
+  
+  // 刷新SPA标记缓存
+  if (travelData.length > 0) {
+    console.log("为SPA缓存捕获地图数据");
+    
+    // 捕获缓存所需的信息
+    setTimeout(() => {
+      try {
+        // 捕获地图配置
+        const mapConfig = {
+          center: map.getCenter(),
+          zoom: map.getZoom(),
+          minZoom: map.options.minZoom,
+          maxZoom: map.options.maxZoom
+        };
+        
+        // 更新缓存
+        window.mapDataCache.mapConfig = mapConfig;
+        // 标记在SPA的captureMapData函数中捕获
+        
+        console.log("SPA缓存数据已更新");
+        
+        // 触发SPA地图创建事件
+        document.dispatchEvent(new CustomEvent('spa:mapCreated', {
+          detail: { map: map }
+        }));
+      } catch (e) {
+        console.error("缓存地图数据时出错:", e);
+      }
+    }, 500);
+  }
+  
+  // 通知其他组件地图初始化完成
+  document.dispatchEvent(new CustomEvent('map:initialized', {
+    detail: { 
+      map: map,
+      data: travelData 
+    }
+  }));
+  
+  return map;
+};
     }
     
     // Try to clean up existing map instance
