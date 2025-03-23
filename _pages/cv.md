@@ -10,7 +10,7 @@ min_content_height_4k: 1200px # 4K显示器
 
 
 
-## 📖 Educations
+# 📖 Educations
 - *Nanyang Technological University, Singapore*  
 **Ph.D., Aug 2023 – Present**  
 ◦ Supervised by Prof. Dusit Niyato
