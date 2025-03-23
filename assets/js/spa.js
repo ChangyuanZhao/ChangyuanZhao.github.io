@@ -7,6 +7,7 @@
  * 3. Consistent white background
  * 4. Preserved map information when switching pages
  * 5. Refresh handling for subpages (redirect to home first, then to the target)
+ * 6. Improved anchor scrolling for highlighted sections
  */
 document.addEventListener("DOMContentLoaded", function () {
   // Core variables
@@ -166,6 +167,11 @@ document.addEventListener("DOMContentLoaded", function () {
   
   // Load page content without full refresh
   function loadPageContent(url, isRedirectLoad = false) {
+    // Save anchor if present for later use
+    const hasAnchor = url.includes('#');
+    const anchor = hasAnchor ? url.substring(url.indexOf('#')) : null;
+    const urlWithoutAnchor = hasAnchor ? url.substring(0, url.indexOf('#')) : url;
+    
     // Check if we're navigating to or from a map page
     const wasMapPage = isMapPage;
     const willBeMapPage = isUrlMapPage(url);
@@ -195,8 +201,27 @@ document.addEventListener("DOMContentLoaded", function () {
       preloadMapResources();
     }
     
+    // Skip content loading if we're just navigating to an anchor on the same page
+    if (hasAnchor && 
+        (window.location.pathname === urlWithoutAnchor || 
+         (window.location.pathname === '/' && urlWithoutAnchor === '/'))) {
+      
+      // Just update URL and scroll to anchor
+      console.log(`Same-page anchor navigation to ${anchor}`);
+      
+      if (isRedirectLoad) {
+        history.replaceState({url: url}, document.title, url);
+      } else {
+        history.pushState({url: url}, document.title, url);
+      }
+      
+      scrollToAnchor(url);
+      document.body.removeChild(loadingIndicator);
+      return;
+    }
+    
     // Fetch page content
-    fetch(url)
+    fetch(urlWithoutAnchor)
       .then(response => {
         if (!response.ok) {
           throw new Error(`Page load failed: ${response.status}`);
@@ -216,33 +241,35 @@ document.addEventListener("DOMContentLoaded", function () {
           mainContent.innerHTML = newContent.innerHTML;
           
           // Update URL (replace if redirect, push if normal navigation)
+          // Make sure to include the anchor if present
+          const fullUrl = hasAnchor ? `${urlWithoutAnchor}${anchor}` : urlWithoutAnchor;
+          
           if (isRedirectLoad) {
-            history.replaceState({url: url}, document.title, url);
+            history.replaceState({url: fullUrl}, document.title, fullUrl);
           } else {
-            history.pushState({url: url}, document.title, url);
+            history.pushState({url: fullUrl}, document.title, fullUrl);
           }
           
           // Initialize new content
           initPageContent();
           
-          // Check for anchor in the URL and scroll to it if present
-          if (url.includes('#')) {
-            scrollToAnchor(url);
-          }
-          
           // Rebind all links
           bindAllLinks();
           
-          // Handle scroll position
-          if (isRedirectLoad && window.restoreScrollPosition) {
-            setTimeout(() => {
+          // Give the browser time to render content before scrolling
+          setTimeout(() => {
+            // Handle scroll position
+            if (isRedirectLoad && window.restoreScrollPosition) {
               window.restoreScrollPosition();
               window.restoreScrollPosition = null;
-            }, 100);
-          } else {
-            // Regular navigation, scroll to top
-            window.scrollTo(0, 0);
-          }
+            } else if (hasAnchor) {
+              // Scroll to anchor with increased delay for content to render
+              scrollToAnchor(fullUrl);
+            } else {
+              // Regular navigation, scroll to top
+              window.scrollTo(0, 0);
+            }
+          }, 300);
         } else {
           // Fallback to traditional navigation
           window.location.href = url;
@@ -591,15 +618,8 @@ document.addEventListener("DOMContentLoaded", function () {
       link.addEventListener("click", function(e) {
         e.preventDefault();
         
-        // Check if this is just an anchor link to the current page
-        if (href.startsWith('/#') && (window.location.pathname === '/' || window.location.pathname.endsWith('index.html'))) {
-          // Just scroll to the anchor on the same page
-          history.pushState({url: href}, document.title, href);
-          scrollToAnchor(href);
-        } else {
-          // Navigate to a different page
-          loadPageContent(href);
-        }
+        // Handle all navigation through the loadPageContent function
+        loadPageContent(href);
       });
     });
   }
@@ -609,40 +629,118 @@ document.addEventListener("DOMContentLoaded", function () {
     if (event.state && event.state.url) {
       loadPageContent(event.state.url);
     } else {
-      loadPageContent(window.location.pathname);
+      loadPageContent(window.location.pathname + window.location.hash);
     }
   });
   
-  // Scroll to anchor function
+  // Scroll to anchor function with improved reliability
   function scrollToAnchor(url) {
     // Extract the hash part from the URL
     const hash = url.includes('#') ? url.substring(url.indexOf('#')) : null;
     
-    if (hash) {
-      console.log(`Scrolling to anchor: ${hash}`);
+    if (!hash) return;
+    
+    console.log(`Attempting to scroll to anchor: ${hash}`);
+    
+    // Function to do the actual scrolling with multiple attempts
+    const attemptScrollToElement = function(retryCount = 0, maxRetries = 5) {
+      // Clean the hash by removing any URL encoding
+      const cleanHash = decodeURIComponent(hash);
+      const hashWithoutPrefix = cleanHash.substring(1); // Remove the # prefix
       
-      // Try to find the element with this ID
-      const targetElement = document.querySelector(hash);
+      // Try multiple selector approaches
+      let targetElement = null;
       
-      if (targetElement) {
-        // Give time for the page to render properly
-        setTimeout(() => {
-          targetElement.scrollIntoView({ behavior: 'smooth' });
-          console.log(`Scrolled to element with ID ${hash}`);
-        }, 200);
-      } else {
-        console.warn(`Element with ID ${hash} not found`);
-        
-        // Try looking for elements with data-section-id
-        const dataTargets = document.querySelectorAll(`[data-section-id="${hash.substring(1)}"]`);
-        if (dataTargets.length > 0) {
-          setTimeout(() => {
-            dataTargets[0].scrollIntoView({ behavior: 'smooth' });
-            console.log(`Scrolled to element with data-section-id ${hash.substring(1)}`);
-          }, 200);
+      // Method 1: Direct ID selector
+      try {
+        targetElement = document.querySelector(cleanHash);
+      } catch (e) {
+        console.warn(`Error with direct selector "${cleanHash}":`, e.message);
+      }
+      
+      // Method 2: Try with escaped selector for special characters
+      if (!targetElement) {
+        try {
+          // Escape special characters in CSS selector
+          const escapedHash = '#' + CSS.escape(hashWithoutPrefix);
+          targetElement = document.querySelector(escapedHash);
+        } catch (e) {
+          console.warn("Error with escaped selector:", e.message);
         }
       }
-    }
+      
+      // Method 3: Try getting element by ID directly
+      if (!targetElement) {
+        targetElement = document.getElementById(hashWithoutPrefix);
+      }
+      
+      // Method 4: Check for data-section-id attribute
+      if (!targetElement) {
+        targetElement = document.querySelector(`[data-section-id="${hashWithoutPrefix}"]`);
+      }
+      
+      // Method 5: Look for elements with class matching the hash
+      if (!targetElement) {
+        targetElement = document.querySelector(`.${hashWithoutPrefix}`);
+      }
+      
+      // Method 6: Try finding an anchor name
+      if (!targetElement) {
+        targetElement = document.querySelector(`a[name="${hashWithoutPrefix}"]`);
+      }
+      
+      // Method 7: Try finding headers with id containing the hash (partial match)
+      if (!targetElement) {
+        const headers = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id]');
+        for (const header of headers) {
+          if (header.id.includes(hashWithoutPrefix)) {
+            targetElement = header;
+            break;
+          }
+        }
+      }
+      
+      if (targetElement) {
+        console.log(`Found target element for "${cleanHash}", scrolling to it`);
+        
+        // Scroll with smooth behavior
+        targetElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start'
+        });
+        
+        // Highlight the element briefly to make it more noticeable
+        const originalBackground = targetElement.style.backgroundColor;
+        const originalTransition = targetElement.style.transition;
+        
+        targetElement.style.transition = 'background-color 1s ease-in-out';
+        targetElement.style.backgroundColor = 'rgba(255, 255, 0, 0.2)';
+        
+        setTimeout(() => {
+          targetElement.style.backgroundColor = originalBackground;
+          setTimeout(() => {
+            targetElement.style.transition = originalTransition;
+          }, 1000);
+        }, 1000);
+        
+        return true;
+      } else if (retryCount < maxRetries) {
+        // Element might not be fully loaded yet, retry after a delay
+        console.log(`Element for "${cleanHash}" not found, retrying in ${100 * (retryCount + 1)}ms (attempt ${retryCount + 1}/${maxRetries})`);
+        setTimeout(() => {
+          attemptScrollToElement(retryCount + 1, maxRetries);
+        }, 100 * (retryCount + 1));
+        return false;
+      } else {
+        console.warn(`Could not find element for "${cleanHash}" after ${maxRetries} attempts`);
+        return false;
+      }
+    };
+    
+    // Start with a larger initial delay for content to fully render
+    setTimeout(() => {
+      attemptScrollToElement();
+    }, 300);
   }
   
   // Initial link binding
@@ -671,7 +769,6 @@ document.addEventListener("DOMContentLoaded", function () {
           if (typeof window.initTravelMap === 'function') {
             window.initTravelMap();
           }
-          break;
         }
       }
     }
@@ -679,4 +776,12 @@ document.addEventListener("DOMContentLoaded", function () {
   
   // Start observing DOM for map container
   mapObserver.observe(document.body, { childList: true, subtree: true });
+  
+  // Check for hash in URL on initial load
+  if (window.location.hash) {
+    // Wait for page to fully load before scrolling to hash
+    setTimeout(() => {
+      scrollToAnchor(window.location.pathname + window.location.hash);
+    }, 500);
+  }
 });
