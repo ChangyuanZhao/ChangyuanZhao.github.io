@@ -28,4 +28,5 @@ min_content_height_4k: 1200px # 4K显示器
 ## 🎖 Honors and Awards
 - *2024.11* One project received an Honorable Mention in the 2024 ComSoc Student Competition *"Communications Technology Changing the World"*, ranking among the top 16 out of 93 submissions.
 
+<div style="min-height: 600px;"></div>
 
