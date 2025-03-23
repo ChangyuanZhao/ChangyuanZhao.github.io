@@ -28,9 +28,11 @@ layout: compress
     .sidebar {
       position: sticky;
       top: 80px; /* 根据您的导航栏高度调整 */
+      align-self: flex-start; /* 确保侧边栏在父容器顶部对齐 */
       height: calc(100vh - 80px);
       overflow-y: auto;
       padding-right: 15px;
+      transition: none; /* 禁用任何可能的过渡动画 */
     }
     
     /* 确保主内容区域正确定位 */
@@ -39,6 +41,7 @@ layout: compress
       flex-wrap: wrap;
       align-items: flex-start;
       margin-top: 1em;
+      min-height: calc(100vh - 120px); /* 保证最小高度，防止页面过短时的跳动 */
     }
     
     .page {
@@ -46,6 +49,11 @@ layout: compress
       min-width: 0;
       padding-left: 15px;
       padding-right: 15px;
+    }
+    
+    /* 防止内容加载时的布局跳动 */
+    .page__content {
+      min-height: 500px; /* 设置一个最小高度，防止内容过少时的跳动 */
     }
     
     /* 确保在移动设备上的响应式布局 */
@@ -64,6 +72,10 @@ layout: compress
       .page {
         width: 100%;
         padding: 0 10px;
+      }
+      
+      .page__content {
+        min-height: auto; /* 在移动设备上不需要最小高度 */
       }
     }
   </style>
@@ -93,28 +105,87 @@ layout: compress
     <!-- 添加控制SPA行为的脚本 -->
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        // 确保页面加载后布局正确
+        // 固定侧边栏位置
         const sidebar = document.querySelector('.sidebar');
         const mainContent = document.querySelector('.page');
+        const mainContainer = document.getElementById('main');
         
-        // 修复可能的布局问题
         if (sidebar && mainContent) {
-          // 确保在大屏幕上侧边栏和主内容区域并排显示
+          // 保存侧边栏的初始位置
+          const sidebarTop = sidebar.getBoundingClientRect().top + window.scrollY;
+          
+          // 设置侧边栏固定位置
           if (window.innerWidth > 767) {
+            sidebar.style.top = `${sidebarTop}px`;
             mainContent.style.width = `calc(100% - ${sidebar.offsetWidth}px)`;
           }
-        }
-        
-        // 监听窗口大小变化，调整布局
-        window.addEventListener('resize', function() {
-          if (sidebar && mainContent) {
+          
+          // 确保内容区域高度足够，防止页面过短导致的跳动
+          const ensureMinHeight = function() {
+            const windowHeight = window.innerHeight;
+            const masthead = document.querySelector('.masthead');
+            const mastheadHeight = masthead ? masthead.offsetHeight : 0;
+            const minHeight = windowHeight - mastheadHeight - 20; // 减去一些边距
+            
+            mainContainer.style.minHeight = `${minHeight}px`;
+          };
+          
+          ensureMinHeight();
+          
+          // 监听窗口大小变化，调整布局
+          window.addEventListener('resize', function() {
             if (window.innerWidth > 767) {
+              sidebar.style.top = `${sidebarTop}px`;
               mainContent.style.width = `calc(100% - ${sidebar.offsetWidth}px)`;
             } else {
+              sidebar.style.top = 'auto';
               mainContent.style.width = '100%';
             }
+            
+            ensureMinHeight();
+          });
+        }
+        
+        // 监听页面内容变化，防止侧边栏跳动
+        const observer = new MutationObserver(function(mutations) {
+          // 当内容变化时，确保侧边栏位置不变
+          if (sidebar && window.innerWidth > 767) {
+            // 防止侧边栏位置变化
+            const currentTop = parseInt(sidebar.style.top, 10) || sidebarTop;
+            sidebar.style.top = `${currentTop}px`;
           }
         });
+        
+        // 监视内容区域的变化
+        if (mainContent) {
+          observer.observe(mainContent, { childList: true, subtree: true });
+        }
+      });
+      
+      // 在页面跳转前保存滚动位置
+      window.addEventListener('beforeunload', function() {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+          sessionStorage.setItem('sidebarScrollTop', sidebar.scrollTop);
+          sessionStorage.setItem('sidebarTop', sidebar.style.top);
+        }
+      });
+      
+      // 页面加载后恢复滚动位置
+      window.addEventListener('load', function() {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+          const savedScrollTop = sessionStorage.getItem('sidebarScrollTop');
+          const savedTop = sessionStorage.getItem('sidebarTop');
+          
+          if (savedScrollTop) {
+            sidebar.scrollTop = parseInt(savedScrollTop, 10);
+          }
+          
+          if (savedTop && window.innerWidth > 767) {
+            sidebar.style.top = savedTop;
+          }
+        }
       });
     </script>
   </body>
