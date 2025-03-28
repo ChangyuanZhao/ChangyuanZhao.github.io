@@ -27,7 +27,7 @@ min_content_height_4k: 1200px # 4K显示器
 
 ## 🎖 Honors and Awards
 - *2024.11* One project received an Honorable Mention in the 2024 ComSoc Student Competition *"Communications Technology Changing the World"*, ranking among the top 16 out of 93 submissions.
-- *2024* One project received a second sliver award in the 2024 SocMeta IEEE ComSoc SNTC Student Competition.
+- *2024* One project received a second silver award in the 2024 SocMeta IEEE ComSoc SNTC Student Competition.
 - *2022* China National Scholarship
 
 
