@@ -35,6 +35,7 @@ Our primary objective is to investigate how intelligent networks can support a w
 <img src="https://img.shields.io/endpoint?url={{ url }}&logo=Google%20Scholar&labelColor=f6f6f6&color=9cf&style=flat&label=citations">
 </a>. 
 
+生成的 URL 是：{{ url }}
 
 <!-- <a href='https://scholar.google.com/citations?user=FI6q53MAAAAJ'>
 <img src="https://img.shields.io/endpoint?url={{ url | url_encode }}&logo=Google%20Scholar&labelColor=f6f6f6&color=9cf&style=flat&label=citations">
