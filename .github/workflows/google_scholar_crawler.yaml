@@ -1,16 +1,14 @@
 name: Get Citation Data
-
 on: 
- workflow_dispatch:  # ✅ 添加这一行，允许你手动触发
- page_build: 
- schedule:
-  - cron:  '0 8 * * *'
-
+  workflow_dispatch:  # 允许手动触发
+  page_build: 
+  schedule:
+    - cron: '0 8 * * *'  # 每天8点运行，注意这里我修复了cron表达式
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3  # 更新到最新版本
     - name: Install Reqs
       run: |
         sudo apt-get install python3-setuptools
@@ -21,11 +19,12 @@ jobs:
         python3 main.py
         cd ./results
         git init
-        git config --local user.name "${GITHUB_ACTOR}"
-        export remote_repo="https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
         git add *.json
         git commit -m "Updated Citation Data"
-        git push "${remote_repo}" HEAD:google-scholar-stats --force
+        git branch -M main  # 设置分支名为main
+        git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
+        git push -f origin main:google-scholar-stats
       env: 
         GOOGLE_SCHOLAR_ID: ${{ secrets.GOOGLE_SCHOLAR_ID }}
-        SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
