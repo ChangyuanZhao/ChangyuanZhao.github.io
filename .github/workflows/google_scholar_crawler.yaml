@@ -24,7 +24,7 @@ jobs:
       run: |
         cd ./google_scholar_crawler
         echo "Start running main.py"
-        python3 -v main.py
+        python3 main.py
         cd ./results
         git init
         git config --global user.name "GitHub Actions"
