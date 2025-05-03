@@ -28,5 +28,5 @@ jobs:
         git push -f origin main:google-scholar-stats
       env: 
         GOOGLE_SCHOLAR_ID: ${{ secrets.GOOGLE_SCHOLAR_ID }}
-        GOOGLE_SCHOLAR_ID: ${{ secrets.GOOGLE_SCHOLAR_ID }}
+        SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}”
         
