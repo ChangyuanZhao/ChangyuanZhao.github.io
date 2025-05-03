@@ -37,12 +37,13 @@ My research is primarily centered around the utilization of Generative AI (GenAI
 
 Our primary objective is to investigate how intelligent networks can support a wide range of GenAI and LLM models, and "how GenAI and LLM models can enhance the performance, security, and reliability of next-generation communication systems. I have published several papers with total <a href='https://scholar.google.com/citations?user=FI6q53MAAAAJ'>google scholar </a> <a href='https://scholar.google.com/citations?user=FI6q53MAAAAJ'><img src="https://badgen.net/https/{{ url | remove: 'https://' }}"></a>. 
 
-"https://badgen.net/http/{{ url | remove: 'https://' }}"
+<!--"https://badgen.net/http/{{ url | remove: 'https://' }}"-->
 
 <!--生成的 URL 是：{{ url }}
 URL是： "https://img.shields.io/endpoint?url={{ url | url_encode }}&logo=Google%20Scholar&labelColor=f6f6f6&color=9cf&style=flat&label=citations"
 BADgen url： "https://badgen.net/https/{{ url | url_encode }}?color=9cf&label=citations"
 https://badgen.net/https/cdn.jsdelivr.net/gh/ChangyuanZhao/ChangyuanZhao.github.io@google-scholar-stats/gs_data_badgen.json
+url: 是https://raw.githubusercontent.com/ChangyuanZhao/ChangyuanZhao.github.io/google-scholar-stats/gs_data_badgen.json
 -->
 
 <!-- <a href='https://scholar.google.com/citations?user=FI6q53MAAAAJ'>
