@@ -3,7 +3,7 @@ on:
   workflow_dispatch:  # 允许手动触发
   page_build: 
   schedule:
-    - cron: '0 8 * * *'  # 每天8点运行，注意这里我修复了cron表达式
+    - cron: '0 8 * * *'  # 每天8点运行，修复了cron表达式
 jobs:
   build:
     runs-on: ubuntu-latest
