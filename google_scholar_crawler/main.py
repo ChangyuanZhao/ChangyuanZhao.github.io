@@ -1,12 +1,42 @@
-from scholarly import scholarly
+from scholarly import scholarly, ProxyGenerator
 import json
 from datetime import datetime
 import os
 import time
 import random
 
+# 设置ScraperAPI代理
+def setup_scraper_api():
+    try:
+        pg = ProxyGenerator()
+        # 从环境变量获取ScraperAPI密钥
+        api_key = os.environ.get('SCRAPER_API_KEY')
+        if not api_key:
+            print("警告: 未设置SCRAPER_API_KEY环境变量")
+            return False
+        
+        success = pg.ScraperAPI(api_key)
+        if success:
+            scholarly.use_proxy(pg)
+            print("成功设置ScraperAPI代理")
+            return True
+        else:
+            print("设置ScraperAPI代理失败")
+            return False
+    except Exception as e:
+        print(f"设置代理时发生错误: {str(e)}")
+        return False
+
 # 主函数
 def main():
+    # 尝试设置代理
+    proxy_success = setup_scraper_api()
+    if not proxy_success:
+        print("无法使用代理，将使用默认方式获取数据")
+    
+    # 添加随机延迟，降低被检测风险
+    time.sleep(random.uniform(1, 3))
+    
     try:
         # 获取学者ID
         scholar_id = os.environ['GOOGLE_SCHOLAR_ID']
