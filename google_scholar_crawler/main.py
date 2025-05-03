@@ -42,6 +42,9 @@ def main():
         data = response.json()
         author_info = data.get('author', {})
 
+        print(json.dumps(author_info, indent=2, ensure_ascii=False))
+
+
         author = {
             'name': author_info.get('name'),
             'citedby': author_info.get('cited_by', {}).get('value'),
