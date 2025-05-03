@@ -3,21 +3,28 @@ on:
   workflow_dispatch:  # 允许手动触发
   page_build: 
   schedule:
-    - cron: '0 8 * * *'  # 每天8点运行，修复了cron表达式
+    - cron: '0 8 * * *'  # 每天8点运行
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3  # 更新到最新版本
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
     - name: Install Reqs
       run: |
         sudo apt-get install python3-setuptools
+        pip install -r google_scholar_crawler/requirements.txt
+
     - name: Run
       run: |
         cd ./google_scholar_crawler
-        pip3 install -r requirements.txt
         echo "Start running main.py"
-        python3 -v main.py
+        python main.py
         cd ./results
         git init
         git config --global user.name "GitHub Actions"
@@ -30,4 +37,3 @@ jobs:
       env: 
         GOOGLE_SCHOLAR_ID: ${{ secrets.GOOGLE_SCHOLAR_ID }}
         SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
-        
