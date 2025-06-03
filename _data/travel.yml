@@ -50,6 +50,7 @@ cities:
     lon: 108.9398
     visits:
       - 2024-12-29
+      - 2025-05-17
 
   - city: Chengdu
     lat: 30.5728
@@ -62,6 +63,18 @@ cities:
     lon: 106.5516
     visits:
       - 2025-04-18
+
+    - city: Harbin
+    lat: 45.8038
+    lon: 126.5349
+    visits:
+      - 2025-05-15
+
+  - city: Changchun
+    lat: 43.8171
+    lon: 125.3235
+    visits:
+      - 2025-05-14
 
 
 
