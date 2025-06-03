@@ -28,7 +28,7 @@ min_content_height_4k: 1200px # 4K显示器
 ## 🎖 Honors and Awards
 - *2025.05* Best Paper Award in the *IWCMC 2025 Conference* on 12–16 May 2025, Marriott Hotel Downtown, Abu Dhabi, UAE
   <p align="center">
-  <img src="_pages/images/iwcmc2025.jpg" alt="Best Paper Award" width="400"/>
+  <img src="/images/iwcmc2025.jpg" alt="Best Paper Award" width="400"/>
 </p>
 
  
