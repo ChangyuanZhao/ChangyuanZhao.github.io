@@ -64,11 +64,11 @@ cities:
     visits:
       - 2025-04-18
 
-    - city: Harbin
-    lat: 45.8038
-    lon: 126.5349
-    visits:
-      - 2025-05-15
+  - city: Harbin
+  lat: 45.8038
+  lon: 126.5349
+  visits:
+    - 2025-05-15
 
   - city: Changchun
     lat: 43.8171
