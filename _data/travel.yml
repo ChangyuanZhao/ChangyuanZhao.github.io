@@ -5,25 +5,25 @@ cities:
     lon: 116.4074
     visits:
       - 2025-02-28
-      
+
   - city: Dalian
     lat: 38.9140
     lon: 121.6147
     visits:
       - 2025-03-02
-      
+
   - city: Suwon
     lat: 37.2636
     lon: 127.0286
     visits:
       - 2025-03-04
-      
+
   - city: Seoul
     lat: 37.5665
     lon: 126.9780
     visits:
       - 2025-03-09
-      
+
   - city: Singapore
     lat: 1.3521
     lon: 103.8198
@@ -32,19 +32,19 @@ cities:
       - 2025-03-14
       - 2025-01-10
       - 2024-12-20
-      
+
   - city: Hong Kong
     lat: 22.3193
     lon: 114.1694
     visits:
       - 2024-12-16
-      
+
   - city: Bangkok
     lat: 13.7563
     lon: 100.5018
     visits:
       - 2024-12-26
-    
+
   - city: Xi'an
     lat: 34.3416
     lon: 108.9398
@@ -57,7 +57,7 @@ cities:
     lon: 104.0668
     visits:
       - 2025-04-15
-  
+
   - city: Chongqing
     lat: 29.5630
     lon: 106.5516
@@ -65,18 +65,13 @@ cities:
       - 2025-04-18
 
   - city: Harbin
-  lat: 45.8038
-  lon: 126.5349
-  visits:
-    - 2025-05-15
+    lat: 45.8038
+    lon: 126.5349
+    visits:
+      - 2025-05-15
 
   - city: Changchun
     lat: 43.8171
     lon: 125.3235
     visits:
       - 2025-05-14
-
-
-
-
-
