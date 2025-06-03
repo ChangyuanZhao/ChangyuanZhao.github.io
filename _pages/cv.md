@@ -27,11 +27,9 @@ min_content_height_4k: 1200px # 4K显示器
 
 ## 🎖 Honors and Awards
 - *2025.05* Best Paper Award in the *IWCMC 2025 Conference* on 12–16 May 2025, Marriott Hotel Downtown, Abu Dhabi, UAE
-  <p align="center">
-  <img src="./images/iwcmc2025.jpg" alt="Best Paper Award" width="400"/>
-</p>
+![Best Paper Award](./images/iwcmc2025.jpg)
 
- 
+
 - *2024.11* One project received an Honorable Mention in the 2024 ComSoc Student Competition *"Communications Technology Changing the World"*, ranking among the top 16 out of 93 submissions.
 - *2024* One project received a second silver award in the 2024 SocMeta IEEE ComSoc SNTC Student Competition.
 - *2022* China National Scholarship
