@@ -5,6 +5,13 @@ cities:
     lon: 116.4074
     visits:
       - 2025-02-28
+      - 2025-06-22
+
+  - city: Shenzhen
+  lat: 22.5431
+  lon: 114.0579
+  visits:
+    - 2025-07-23
 
   - city: Dalian
     lat: 38.9140
