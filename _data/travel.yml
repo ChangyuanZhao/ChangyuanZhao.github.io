@@ -7,6 +7,12 @@ cities:
       - 2025-02-28
       - 2025-06-22
 
+  - city: Shanghai
+    lat: 31.2304
+    lon: 121.4737
+    visits:
+      - 2025-08-09
+
   - city: Shenzhen
     lat: 22.5431
     lon: 114.0579
