@@ -88,3 +88,9 @@ cities:
     lon: 125.3235
     visits:
       - 2025-05-14
+      
+  - city: Changsha
+    lat: 28.2282
+    lon: 112.9388
+    visits:
+      - 2025-09-24
