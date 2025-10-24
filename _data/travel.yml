@@ -70,6 +70,7 @@ cities:
     lon: 104.0668
     visits:
       - 2025-04-15
+      - 2025-10-19
 
   - city: Chongqing
     lat: 29.5630
