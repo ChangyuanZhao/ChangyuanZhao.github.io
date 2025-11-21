@@ -6,6 +6,7 @@ cities:
     visits:
       - 2025-02-28
       - 2025-06-22
+      - 2025-11-13
 
   - city: Shanghai
     lat: 31.2304
