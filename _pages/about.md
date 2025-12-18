@@ -60,6 +60,7 @@ For more information, please visit our research group at NTU.
 
 
 # 🔥 News
+- *2025.12*: &nbsp;🎉🎉One first-author paper has been accepted by the IEEE Transactions on Mobile Computing. Thanks Prof. Dusit and Prof. Kim!
 - *2025.08*: &nbsp;🎉🎉 One first-author paper has been accepted by the IEEE Wireless Communications. Thanks Prof. Dusit and Prof. Kim!
 - *2025.07*: &nbsp;🎉🎉 Two papers have been accepted to the 2025 IEEE Global Communications Conference (GLOBECOM) — looking forward to seeing you in Taipei, Taiwan, this December!
 - *2025.05*: &nbsp;🎉🎉 One co-authored paper has been awarded the Best Paper Award in the 21st International Wireless Communications & Mobile Computing Conference. Thanks Prof. Dusit and Dr. Jiacheng!
