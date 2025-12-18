@@ -26,6 +26,11 @@ min_content_height_4k: 1200px # 4K显示器
 
 
 ## 🎖 Honors and Awards
+
+- *2025.12* Winner in *Signal Processing and Computing for Communications (SPCC) TC Student Challenge and Video Contest* – 2025
+![SPCC_winner](./images/Spcc.png)
+
+
 - *2025.05* Best Paper Award in the *IWCMC 2025 Conference* on 12–16 May 2025, Marriott Hotel Downtown, Abu Dhabi, UAE
 ![Best Paper Award](./images/iwcmc2025.jpg)
 
