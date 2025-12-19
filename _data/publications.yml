@@ -32,6 +32,22 @@
     - Xuemin Shen
     - Khaled B Letaief
 
+- title: "Generative AI-Enabled Wireless Communications for Robust Low-Altitude Economy Networking"
+  url: "https://ieeexplore.ieee.org/document/11169307"
+  type: "Journal"     # ✅ 可为 "Journal" 或 "Conference"
+  year: 2025
+  venue: "IEEE Wireless Communications"
+  short: "WCM"
+  authors:
+    - Changyuan Zhao
+    - Jiacheng Wang
+    - Ruichen Zhang
+    - Dusit Niyato
+    - Geng Sun
+    - Hongyang Du
+    - Dong In Kim
+    - Abbas Jamalipour
+
     
 - title: "Inner approximating robust reach-avoid sets for discrete-time polynomial dynamical systems"
   url: "https://ieeexplore.ieee.org/document/9910391"
