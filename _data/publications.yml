@@ -60,7 +60,22 @@
     - Shuyuan Zhang
     - Lei Wang
     - Bai Xue
-    
+
+
+- title: "Maximum-likelihood Estimation based on Diffusion Model for Wireless Communications"
+  # url: "https://ieeexplore.ieee.org/document/9993391"
+  type: "Conference"     # ✅ 可为 "Journal" 或 "Conference"
+  year: 2025
+  venue: "2025 IEEE Global Communications Conference"
+  short: "GLOBECOM"
+  authors:
+    - Changyuan Zhao
+    - Jiacheng Wang
+    - Ruichen Zhang
+    - Dusit Niyato
+    - Dong In Kim
+    - Hongyang Du
+
 - title: "Outer-approximating Controlled Reach-avoid Sets for Polynomial Systems"
   url: "https://ieeexplore.ieee.org/document/9993391"
   type: "Conference"     # ✅ 可为 "Journal" 或 "Conference"
