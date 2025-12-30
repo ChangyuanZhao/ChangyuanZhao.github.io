@@ -27,6 +27,9 @@ min_content_height_4k: 1200px # 4K显示器
 
 ## 🎖 Honors and Awards
 
+- *2025.12* Exemplary Reviewer, *IEEE Transactions on Network Science and Engineering (TNSE)*, 2025
+![Reviewer_tnse](./images/tnse_2025.png)
+
 - *2025.12* Winner in *Signal Processing and Computing for Communications (SPCC) TC Student Challenge and Video Contest* – 2025
 ![SPCC_winner](./images/Spcc.png)
 
@@ -36,7 +39,7 @@ min_content_height_4k: 1200px # 4K显示器
 
 
 - *2024.11* One project received an Honorable Mention in the 2024 ComSoc Student Competition *"Communications Technology Changing the World"*, ranking among the top 16 out of 93 submissions.
-![Best Paper Award](./images/comsoc.png)
+![comsoc_2024](./images/comsoc.png)
 
 - *2024* One project received a second silver award in the 2024 SocMeta IEEE ComSoc SNTC Student Competition.
 - *2022* China National Scholarship
