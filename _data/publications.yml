@@ -101,7 +101,7 @@
 
 
 - title: "Temporal Spectrum Cartography in Low-Altitude Economy Networks: A Generative AI Framework with Multi-Agent Learning"
-  # url: "https://dl.acm.org/doi/10.1609/aaai.v39i21.34437"
+  url: "https://ieeexplore.ieee.org/document/11311556"
   type: "Journal"     # ✅ 可为 "Journal" 或 "Conference"
   year: 2025
   venue: "IEEE Transactions on Mobile Computing"
