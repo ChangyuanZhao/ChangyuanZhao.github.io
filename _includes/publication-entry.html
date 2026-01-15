@@ -16,11 +16,35 @@
     <div style="margin-top: 0.3em; word-wrap: break-word; overflow-wrap: break-word;">
       {% assign display_limit = 7 %}
       {% assign total = include.pub.authors | size %}
-      {% for author in include.pub.authors limit: display_limit %}
-        {{ author }}{% if forloop.last == false %}, {% endif %}
-      {% endfor %}
+      
+      <!-- Short version (collapsed) -->
+      <span class="authors-short-{{ include.pub.id | default: forloop.index }}" id="authors-short-{{ include.pub.id | default: forloop.index }}">
+        {% for author in include.pub.authors limit: display_limit %}
+          {{ author }}{% if forloop.last == false %}, {% endif %}
+        {% endfor %}
+        {% if total > display_limit %}
+          and <a href="javascript:void(0)" 
+                 onclick="toggleAuthors('{{ include.pub.id | default: forloop.index }}')" 
+                 style="color: #00369f; text-decoration: none; cursor: pointer;">
+                 <span style="color: gray;">{{ total | minus: display_limit }} more</span> ▼
+              </a>
+        {% endif %}
+      </span>
+      
+      <!-- Full version (expanded) -->
       {% if total > display_limit %}
-        and <span style="color: gray;">{{ total | minus: display_limit }} more</span>
+        <span class="authors-full-{{ include.pub.id | default: forloop.index }}" 
+              id="authors-full-{{ include.pub.id | default: forloop.index }}" 
+              style="display: none;">
+          {% for author in include.pub.authors %}
+            {{ author }}{% if forloop.last == false %}, {% endif %}
+          {% endfor %}
+          <a href="javascript:void(0)" 
+             onclick="toggleAuthors('{{ include.pub.id | default: forloop.index }}')" 
+             style="color: #00369f; text-decoration: none; cursor: pointer; margin-left: 4px;">
+             show less ▲
+          </a>
+        </span>
       {% endif %}
     </div>
     
