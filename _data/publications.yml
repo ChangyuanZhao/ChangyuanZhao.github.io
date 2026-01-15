@@ -116,3 +116,23 @@
     - Zan Li
     - Abbas Jamalipour
     - Dong In Kim
+    
+- title: "Edge General Intelligence Through World Models, Large Language Models, and Agentic AI: Fundamentals, Solutions, and Challenges"
+  # url: "https://ieeexplore.ieee.org/document/11311556"
+  type: "Journal"     # ✅ 可为 "Journal" 或 "Conference"
+  year: 2026
+  venue: "IEEE Transactions on Cognitive Communications and Networking"
+  short: "TCCN"
+  authors:
+    - Changyuan Zhao
+    - Guangyuan Liu
+    - Ruichen Zhang
+    - Yinqiu Liu
+    - Jiacheng Wang
+    - Jiawen Kang
+    - Dusit Niyato
+    - Zan Li
+    - Zhu Han
+    - Sumei Sun
+    - Chau Yuen
+    - Dong In Kim
