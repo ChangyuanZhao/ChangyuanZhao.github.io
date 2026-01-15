@@ -23,11 +23,10 @@
           {{ author }}{% if forloop.last == false %}, {% endif %}
         {% endfor %}
         {% if total > display_limit %}
-          and <a href="javascript:void(0)" 
-                 onclick="toggleAuthors('{{ include.pub.id | default: forloop.index }}')" 
-                 style="color: #00369f; text-decoration: none; cursor: pointer;">
-                 <span style="color: gray;">{{ total | minus: display_limit }} more</span> ▼
-              </a>
+          and <span onclick="toggleAuthors('{{ include.pub.id | default: forloop.index }}')" 
+                    style="color: #00369f; text-decoration: none; cursor: pointer; user-select: none;">
+                    <span style="color: gray;">{{ total | minus: display_limit }} more</span> ▼
+              </span>
         {% endif %}
       </span>
       
@@ -39,11 +38,10 @@
           {% for author in include.pub.authors %}
             {{ author }}{% if forloop.last == false %}, {% endif %}
           {% endfor %}
-          <a href="javascript:void(0)" 
-             onclick="toggleAuthors('{{ include.pub.id | default: forloop.index }}')" 
-             style="color: #00369f; text-decoration: none; cursor: pointer; margin-left: 4px;">
-             show less ▲
-          </a>
+          <span onclick="toggleAuthors('{{ include.pub.id | default: forloop.index }}')" 
+                style="color: #00369f; text-decoration: none; cursor: pointer; margin-left: 4px; user-select: none;">
+                show less ▲
+          </span>
         </span>
       {% endif %}
     </div>
