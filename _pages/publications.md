@@ -49,3 +49,19 @@ min_content_height_4k: 1200px # 4K显示器
   {% include publication-entry.html pub=pub %}
 {% endfor %}
 
+
+<script>
+function toggleAuthors(id) {
+  const shortEl = document.getElementById('authors-short-' + id);
+  const fullEl = document.getElementById('authors-full-' + id);
+  
+  if (shortEl.style.display === 'none') {
+    shortEl.style.display = 'inline';
+    fullEl.style.display = 'none';
+  } else {
+    shortEl.style.display = 'none';
+    fullEl.style.display = 'inline';
+  }
+}
+</script>
+
