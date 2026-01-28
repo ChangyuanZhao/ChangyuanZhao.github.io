@@ -23,9 +23,10 @@ min_content_height_4k: 1200px # 4K显示器
 **B.Sc., Sept. 2016 – Jun. 2020**  
 
 
-
-
 ## 🎖 Honors and Awards
+
+- *2026.01* Best Paper Award in the *5th International Conference on Computer, Artificial Intelligence and Control Engineering (CAICE 2026)* on Jan. 23-25, 2026, Hangzhou, China
+![Best Paper Award](./images/BP/CAICE_2026.jpg)
 
 - *2025.12* Exemplary Reviewer, *IEEE Transactions on Network Science and Engineering (TNSE)*, 2025
 ![Reviewer_tnse](./images/tnse_2025.png)
