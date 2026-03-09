@@ -60,6 +60,8 @@ For more information, please visit our research group at NTU.
 
 
 # 🔥 News
+- *2026.03*: &nbsp;🎉🎉Two first-author papers have been accepted by the IEEE Communications Magazine.
+- *2026.02*: &nbsp;🎉🎉One first-author paper has been accepted by the IEEE Journal on Selected Areas in Communications.
 - *2026.01*: &nbsp;🎉🎉One first-author paper has been accepted by the IEEE Transactions on Cognitive Communications and Networking. Thanks Prof. Dusit and Prof. Kim!
 - *2025.12*: &nbsp;🎉🎉 Honored to receive the Exemplary Reviewer Award, IEEE Transactions on Network Science and Engineering (TNSE), 2025. Many thanks to the TNSE community for the recognition.
 - *2025.12*: &nbsp;🎉🎉One first-author paper has been accepted by the IEEE Transactions on Mobile Computing. Thanks Prof. Dusit and Prof. Kim!
