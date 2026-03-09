@@ -175,8 +175,8 @@
   # url: "https://ieeexplore.ieee.org/document/11417835"
   type: "Journal"     # ✅ 可为 "Journal" 或 "Conference"
   year: 2026
-  venue: "IEEE Journal on Selected Areas in Communications."
-  short: "JSAC"
+  venue: "IEEE Communications Magazine"
+  short: "COMMAG"
   authors:
     - Changyuan Zhao
     - Ruichen Zhang
