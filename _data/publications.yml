@@ -136,3 +136,55 @@
     - Sumei Sun
     - Chau Yuen
     - Dong In Kim
+
+
+- title: "SecDiff: Diffusion-Aided Secure Deep Joint Source-Channel Coding Against Adversarial Attacks"
+  url: "https://ieeexplore.ieee.org/document/11417835"
+  type: "Journal"     # ✅ 可为 "Journal" 或 "Conference"
+  year: 2026
+  venue: "IEEE Journal on Selected Areas in Communications"
+  short: "JSAC"
+  authors:
+    - Changyuan Zhao
+    - Jiacheng Wang
+    - Ruichen Zhang
+    - Dusit Niyato
+    - Hongyang Du
+    - Zehui Xiong
+    - Dong In Kim
+    - Ping Zhang
+
+
+- title: "From Agentification to Self-Evolving Agentic AI for Wireless Networks: Concepts, Approaches, and Future Research Directions"
+  # url: "https://ieeexplore.ieee.org/document/11417835"
+  type: "Journal"     # ✅ 可为 "Journal" 或 "Conference"
+  year: 2026
+  venue: "IEEE Communications Magazine"
+  short: "COMMAG"
+  authors:
+    - Changyuan Zhao
+    - Ruichen Zhang
+    - Jiacheng Wang
+    - Dusit Niyato
+    - Geng Sun
+    - Xianbin Wang
+    - Shiwen Mao
+    - Abbas Jamalipour
+
+- title: "World Models for Cognitive Agents: Transforming Edge Intelligence in Future Networks"
+  # url: "https://ieeexplore.ieee.org/document/11417835"
+  type: "Journal"     # ✅ 可为 "Journal" 或 "Conference"
+  year: 2026
+  venue: "IEEE Journal on Selected Areas in Communications."
+  short: "JSAC"
+  authors:
+    - Changyuan Zhao
+    - Ruichen Zhang
+    - Jiacheng Wang
+    - Gaosheng Zhao
+    - Dusit Niyato
+    - Geng Sun
+    - Zehui Xiong
+    - Shiwen Mao
+    - Dong In Kim
+
