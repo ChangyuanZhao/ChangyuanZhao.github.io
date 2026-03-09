@@ -25,6 +25,9 @@ min_content_height_4k: 1200px # 4K显示器
 
 ## 🎖 Honors and Awards
 
+- *2026.02* Best Paper Award in the *12th EAI International Conference on Industrial Networks and Intelligent Systems (EAI INISCOM 2026)* on Feb. 26-27, 2026, Da Nang City, Vietnam
+![BP_CAICE_2026](./images/BP/ICINIS.png)
+
 - *2026.01* Best Paper Award in the *5th International Conference on Computer, Artificial Intelligence and Control Engineering (CAICE 2026)* on Jan. 23-25, 2026, Hangzhou, China
 ![BP_CAICE_2026](./images/BP/CAICE_2026.jpg)
 
