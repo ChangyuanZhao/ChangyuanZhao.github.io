@@ -111,3 +111,16 @@ cities:
     visits:
       - 2026-02-25
 
+
+  - city: Guangzhou
+    lat: 23.1291
+    lon: 113.2644
+    visits:
+      - 2026-02-05
+
+  - city: Kuala Lumpur
+    lat: 3.1390
+    lon: 101.6869
+    visits:
+      - 2026-04-12
+
