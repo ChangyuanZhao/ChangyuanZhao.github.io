@@ -75,171 +75,125 @@ For more information, please visit our research group at NTU.
 
 
 
-# 🌍 Maps
+# 🗺️ Maps
 
 <div class="map-row">
-  <!-- Travel Map -->
   <div class="map-box">
-    <h3>🌍 Travel Map</h3>
+    <h3>✈️ Travel Map</h3>
     <div id="travel-map"></div>
-    <p class="map-note">
-      Since 2024 Dec., I have visited <span id="total-cities">0</span> cities with a total of <span id="total-visits">0</span> travel experiences.
-    </p>
+    <p class="map-note">Since 2024 Dec., I have visited <span id="total-cities">0</span> cities with a total of <span id="total-visits">0</span> travel experiences.</p>
   </div>
-
-  <!-- Visitor Map -->
   <div class="map-box">
     <h3>📈 Visitors</h3>
     <div class="visitor-map-wrapper">
-      <script
-        type="text/javascript"
-        id="mapmyvisitors"
-        src="//mapmyvisitors.com/map.js?d=EuV_MRhvUarWDlcMSSMFIhxd9n0ESY-v1UXCtSgomf0&cl=d62728&w=a">
+      <script type="text/javascript" id="mapmyvisitors"
+        src="//mapmyvisitors.com/map.js?d=EuV_MRhvUarWDlcMSSMFIhxd9n0ESY-v1UXCtSgomf0&cl=d62728&w=a&co=ffffff">
       </script>
     </div>
-    <p class="map-note">
-      From where I have been → to where my research reaches.
-    </p>
+    <p class="map-note">From where I have been → to where my research reaches.</p>
   </div>
 </div>
 
 <style>
-  .map-row {
-    display: flex;
-    gap: 24px;
-    flex-wrap: wrap;
-    margin: 20px 0;
-    align-items: flex-start;
-  }
-
-  .map-box {
-    flex: 1 1 360px;
-    min-width: 320px;
-  }
-
-  .map-box h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
-  }
-
-  #travel-map {
-    height: 240px;
-    width: 100%;
-    border-radius: 8px;
-    position: relative;
-    z-index: 1;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-
-  .visitor-map-wrapper {
-    min-height: 240px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-
-  .map-note {
-    font-size: 0.92em;
-    color: #666;
-    margin-top: 10px;
-    margin-bottom: 0;
-  }
-
-  @media (max-width: 768px) {
-    .map-row {
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    .map-box {
-      min-width: 100%;
-    }
-
-    #travel-map,
-    .visitor-map-wrapper {
-      min-height: 220px;
-      height: 220px;
-    }
-  }
+.map-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+  align-items: stretch;
+}
+.map-box {
+  flex: 1 1 0;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+}
+.map-box h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+#travel-map {
+  height: 320px;
+  width: 100%;
+  border-radius: 8px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.visitor-map-wrapper {
+  height: 320px;
+  width: 100%;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+/* 强制 mapmyvisitors 注入的元素撑满并使用白底 */
+.visitor-map-wrapper > * {
+  width: 100% !important;
+  height: 100% !important;
+  background: #ffffff !important;
+}
+.visitor-map-wrapper iframe,
+.visitor-map-wrapper canvas,
+.visitor-map-wrapper svg {
+  width: 100% !important;
+  height: 100% !important;
+  background: #ffffff !important;
+}
+.map-note {
+  font-size: 0.92em;
+  color: #666;
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+@media (max-width: 768px) {
+  .map-row { flex-direction: column; gap: 18px; }
+  .map-box { min-width: 100%; }
+  #travel-map,
+  .visitor-map-wrapper { height: 260px; }
+}
 </style>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-
 <script>
-  function initMap() {
-    const mapContainer = document.getElementById('travel-map');
-    if (!mapContainer) return;
-
-    if (window.travelMap) {
-      window.travelMap.invalidateSize();
-      return;
-    }
-
-    const map = L.map('travel-map').setView([30, 105], 2);
-    window.travelMap = map;
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 10,
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    const travelData = {{ site.data.travel.cities | jsonify }} || [];
-
-    travelData.forEach(entry => {
-      const totalVisits = entry.visits.length;
-      const recentVisits = entry.visits.slice(0, Math.min(5, totalVisits)).reverse();
-
-      const popupContent = `
-        <strong>${entry.city}</strong><br/>
-        🧭 Total trips: ${totalVisits}<br/>
-        🕒 Most recent ${recentVisits.length} trips:<br/>
-        <ul style="padding-left: 16px; margin: 5px 0;">
-          ${recentVisits.map(date => `<li>${date}</li>`).join("")}
-        </ul>
-      `;
-
-      const baseSize = 3;
-      const growthFactor = 0.7;
-      const maxVisitsForSize = 8;
-      const effectiveVisits = Math.min(totalVisits, maxVisitsForSize);
-      const radius = baseSize + effectiveVisits * growthFactor;
-
-      L.circleMarker([entry.lat, entry.lon], {
-        radius: radius,
-        fillColor: "#d62728",
-        color: "#b22222",
-        weight: 1,
-        opacity: 1,
-        fillOpacity: 0.7
-      }).bindPopup(popupContent).addTo(map);
-    });
-
-    document.getElementById('total-cities').textContent = travelData.length;
-
-    let totalVisits = 0;
-    travelData.forEach(entry => {
-      totalVisits += entry.visits.length;
-    });
-    document.getElementById('total-visits').textContent = totalVisits;
-
-    setTimeout(function() {
-      if (window.travelMap) window.travelMap.invalidateSize();
-    }, 300);
-  }
-
-  initMap();
-  window.addEventListener('load', initMap);
-  window.addEventListener('DOMContentLoaded', initMap);
-  window.addEventListener('resize', function() {
-    if (window.travelMap) window.travelMap.invalidateSize();
+function initMap() {
+  const mapContainer = document.getElementById('travel-map');
+  if (!mapContainer) return;
+  if (window.travelMap) { window.travelMap.invalidateSize(); return; }
+  const map = L.map('travel-map').setView([30, 105], 2);
+  window.travelMap = map;
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 10,
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+  const travelData = {{ site.data.travel.cities | jsonify }} || [];
+  travelData.forEach(entry => {
+    const totalVisits = entry.visits.length;
+    const recentVisits = entry.visits.slice(0, Math.min(5, totalVisits)).reverse();
+    const popupContent = `<b>${entry.city}</b><br>🧭 Total trips: ${totalVisits}<br>🕒 Most recent ${recentVisits.length} trips:<ul>${recentVisits.map(d => `<li>${d}</li>`).join("")}</ul>`;
+    const baseSize = 3, growthFactor = 0.7, maxVisitsForSize = 8;
+    const effectiveVisits = Math.min(totalVisits, maxVisitsForSize);
+    const radius = baseSize + effectiveVisits * growthFactor;
+    L.circleMarker([entry.lat, entry.lon], {
+      radius: radius, fillColor: "#d62728", color: "#b22222",
+      weight: 1, opacity: 1, fillOpacity: 0.7
+    }).bindPopup(popupContent).addTo(map);
   });
-  window.addEventListener('hashchange', function() {
-    setTimeout(initMap, 100);
-    setTimeout(initMap, 500);
-  });
-  window.addEventListener('popstate', function() {
-    setTimeout(initMap, 300);
-  });
+  document.getElementById('total-cities').textContent = travelData.length;
+  let totalVisits = 0;
+  travelData.forEach(entry => { totalVisits += entry.visits.length; });
+  document.getElementById('total-visits').textContent = totalVisits;
+  setTimeout(() => { if (window.travelMap) window.travelMap.invalidateSize(); }, 300);
+}
+initMap();
+window.addEventListener('load', initMap);
+window.addEventListener('DOMContentLoaded', initMap);
+window.addEventListener('resize', () => { if (window.travelMap) window.travelMap.invalidateSize(); });
+window.addEventListener('hashchange', () => { setTimeout(initMap, 100); setTimeout(initMap, 500); });
+window.addEventListener('popstate', () => setTimeout(initMap, 300));
 </script>
