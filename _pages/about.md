@@ -227,4 +227,30 @@ For more information, please visit our research group at NTU.
   });
 </script>
 
+# 📈 Visitors
+
+<div class="visitor-widget">
+  <script
+    type="text/javascript"
+    id="mapmyvisitors"
+    src="//mapmyvisitors.com/map.js?d=EuV_MRhvUarWDlcMSSMFIhxd9n0ESY-v1UXCtSgomf0&cl=ffffff&w=a">
+  </script>
+</div>
+
+<p class="visitor-note">
+  From where I have been → to where my research reaches 🌍
+</p>
+
+<style>
+  .visitor-widget {
+    margin: 20px 0 10px 0;
+    text-align: center;
+  }
+
+  .visitor-note {
+    font-size: 0.92em;
+    color: #666;
+    text-align: center;
+  }
+</style>
 
