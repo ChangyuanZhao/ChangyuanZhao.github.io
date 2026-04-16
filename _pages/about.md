@@ -75,69 +75,122 @@ For more information, please visit our research group at NTU.
 
 
 
-# 🌍 Travel Map
+# 🌍 Maps
 
-<div id="travel-map" style="height: 400px; width: 100%; border-radius: 8px; margin: 20px 0; position: relative; z-index: 1;"></div>
-<p class="map-stats">Since 2024 Dec., I have visited <span id="total-cities">0</span> cities with a total of <span id="total-visits">0</span> travel experiences.</p>
+<div class="map-row">
+  <!-- Travel Map -->
+  <div class="map-box">
+    <h3>🌍 Travel Map</h3>
+    <div id="travel-map"></div>
+    <p class="map-note">
+      Since 2024 Dec., I have visited <span id="total-cities">0</span> cities with a total of <span id="total-visits">0</span> travel experiences.
+    </p>
+  </div>
+
+  <!-- Visitor Map -->
+  <div class="map-box">
+    <h3>📈 Visitors</h3>
+    <div class="visitor-map-wrapper">
+      <script
+        type="text/javascript"
+        id="mapmyvisitors"
+        src="//mapmyvisitors.com/map.js?d=EuV_MRhvUarWDlcMSSMFIhxd9n0ESY-v1UXCtSgomf0&cl=d62728&w=a">
+      </script>
+    </div>
+    <p class="map-note">
+      From where I have been → to where my research reaches.
+    </p>
+  </div>
+</div>
+
 <style>
-  #travel-map {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-bottom: 15px;
+  .map-row {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+    align-items: flex-start;
   }
-  
-  /* 其他样式保持不变 */
+
+  .map-box {
+    flex: 1 1 360px;
+    min-width: 320px;
+  }
+
+  .map-box h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+
+  #travel-map {
+    height: 240px;
+    width: 100%;
+    border-radius: 8px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .visitor-map-wrapper {
+    min-height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .map-note {
+    font-size: 0.92em;
+    color: #666;
+    margin-top: 10px;
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 768px) {
+    .map-row {
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .map-box {
+      min-width: 100%;
+    }
+
+    #travel-map,
+    .visitor-map-wrapper {
+      min-height: 220px;
+      height: 220px;
+    }
+  }
 </style>
-<!-- Leaflet 地图库 -->
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+
 <script>
-  // 初始化函数
   function initMap() {
-    console.log("初始化地图...");
-    
-    // 检查地图容器是否存在
     const mapContainer = document.getElementById('travel-map');
-    if (!mapContainer) {
-      console.error("找不到地图容器");
-      return;
-    }
-    
-    // 如果地图已存在，只刷新布局
+    if (!mapContainer) return;
+
     if (window.travelMap) {
-      console.log("地图已存在，刷新布局");
       window.travelMap.invalidateSize();
       return;
     }
-    
-    console.log("创建新地图实例");
-    // 初始化地图
+
     const map = L.map('travel-map').setView([30, 105], 2);
     window.travelMap = map;
-    
-    // 添加瓦片图层
-    try {
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 10,
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
-    } catch (e) {
-      console.error("主要瓦片源加载失败，尝试备用源", e);
-      
-      // 备用瓦片源
-      L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
-        maxZoom: 10,
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
-    }
-    
-    // 使用 Jekyll 从 YAML 文件中获取旅行数据
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 10,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
     const travelData = {{ site.data.travel.cities | jsonify }} || [];
-    
-    // 处理旅行数据并添加标记
+
     travelData.forEach(entry => {
       const totalVisits = entry.visits.length;
       const recentVisits = entry.visits.slice(0, Math.min(5, totalVisits)).reverse();
-      
+
       const popupContent = `
         <strong>${entry.city}</strong><br/>
         🧭 Total trips: ${totalVisits}<br/>
@@ -146,14 +199,13 @@ For more information, please visit our research group at NTU.
           ${recentVisits.map(date => `<li>${date}</li>`).join("")}
         </ul>
       `;
-      
-      // 根据访问次数调整圆点大小
+
       const baseSize = 3;
       const growthFactor = 0.7;
       const maxVisitsForSize = 8;
       const effectiveVisits = Math.min(totalVisits, maxVisitsForSize);
       const radius = baseSize + effectiveVisits * growthFactor;
-      
+
       L.circleMarker([entry.lat, entry.lon], {
         radius: radius,
         fillColor: "#d62728",
@@ -163,94 +215,31 @@ For more information, please visit our research group at NTU.
         fillOpacity: 0.7
       }).bindPopup(popupContent).addTo(map);
     });
-    
-    // 更新统计数字
+
     document.getElementById('total-cities').textContent = travelData.length;
+
     let totalVisits = 0;
     travelData.forEach(entry => {
       totalVisits += entry.visits.length;
     });
     document.getElementById('total-visits').textContent = totalVisits;
-    
-    // 强制刷新地图布局
+
     setTimeout(function() {
-      map.invalidateSize();
-    }, 100);
+      if (window.travelMap) window.travelMap.invalidateSize();
+    }, 300);
   }
 
-  // 立即尝试初始化
   initMap();
-  
-  // 定期检查并尝试初始化地图（轮询机制）
-  function checkAndInitMap() {
-    const mapContainer = document.getElementById('travel-map');
-    if (mapContainer) {
-      if (!window.travelMap) {
-        console.log("轮询检测到地图容器但没有地图实例，初始化地图");
-        initMap();
-      } else {
-        // 确保地图布局正确
-        window.travelMap.invalidateSize();
-      }
-    }
-  }
-  
-  // 每1秒检查一次地图状态
-  setInterval(checkAndInitMap, 1000);
-  
-  // 各种事件监听
   window.addEventListener('load', initMap);
   window.addEventListener('DOMContentLoaded', initMap);
   window.addEventListener('resize', function() {
     if (window.travelMap) window.travelMap.invalidateSize();
   });
   window.addEventListener('hashchange', function() {
-    console.log("URL哈希变化，多次尝试初始化地图");
     setTimeout(initMap, 100);
     setTimeout(initMap, 500);
-    setTimeout(initMap, 1000);
   });
   window.addEventListener('popstate', function() {
-    console.log("历史状态变化，尝试初始化地图");
     setTimeout(initMap, 300);
   });
-  
-  // 为内部链接添加处理
-  document.addEventListener('DOMContentLoaded', function() {
-    const links = document.querySelectorAll('a[href^="#"]');
-    links.forEach(link => {
-      link.addEventListener('click', function() {
-        console.log("检测到内部链接点击");
-        setTimeout(initMap, 300);
-      });
-    });
-  });
 </script>
-
-# 📈 Visitors
-
-<div class="visitor-widget">
-  <script
-    type="text/javascript"
-    id="mapmyvisitors"
-    src="//mapmyvisitors.com/map.js?d=EuV_MRhvUarWDlcMSSMFIhxd9n0ESY-v1UXCtSgomf0&cl=ffffff&w=a">
-  </script>
-</div>
-
-<p class="visitor-note">
-  From where I have been → to where my research reaches 🌍
-</p>
-
-<style>
-  .visitor-widget {
-    margin: 20px 0 10px 0;
-    text-align: center;
-  }
-
-  .visitor-note {
-    font-size: 0.92em;
-    color: #666;
-    text-align: center;
-  }
-</style>
-
