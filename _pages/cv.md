@@ -12,7 +12,7 @@ min_content_height_4k: 1200px # 4K显示器
 
 # 📖 Educations
 - *Nanyang Technological University, Singapore*  
-**Ph.D., Aug 2023 – Present**  
+**Ph.D., Aug. 2023 – Present**  
 ◦ Supervised by Prof. Dusit Niyato
 
 - *University of Chinese Academy of Sciences, Institute of Software, China* <br/>
@@ -20,7 +20,14 @@ min_content_height_4k: 1200px # 4K显示器
 ◦ Supervised by Prof. Bai Xue
 
 - *University of Science and Technology of China, China* <br/>
-**B.Sc., Sept. 2016 – Jun. 2020**  
+**B.Sc., Sept. 2016 – Jun. 2020**
+
+
+# 📑 Research Experience
+- *Sungkyunkwan University, South Korea*  
+**Visiting Student, Mar. 2025  
+◦ Supervised by Prof. Dong In Kim
+
 
 
 ## 🎖 Honors and Awards
