@@ -94,7 +94,7 @@ For more information, please visit our research group at NTU.
       <script
         type="text/javascript"
         id="mapmyvisitors"
-        src="//mapmyvisitors.com/map.js?d=EuV_MRhvUarWDlcMSSMFIhxd9n0ESY-v1UXCtSgomf0&cl=d62728&w=a&co=ffffff">
+        src="//mapmyvisitors.com/map.js?d=EuV_MRhvUarWDlcMSSMFIhxd9n0ESY-v1UXCtSgomf0&cl=d62728&w=a&cl=ffffff&w=a&co=4a6fa5">
       </script>
     </div>
     <p class="map-note">
