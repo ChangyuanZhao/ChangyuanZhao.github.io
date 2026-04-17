@@ -25,7 +25,7 @@ min_content_height_4k: 1200px # 4K显示器
 
 # 📑 Research Experience
 - *Sungkyunkwan University, South Korea*  
-**Visiting Student, Mar. 2025  
+**Visiting Student, Mar. 2025**  
 ◦ Supervised by Prof. Dong In Kim
 
 
