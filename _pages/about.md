@@ -63,6 +63,7 @@ For more information, please visit our research group at NTU.
 
 
 # 🔥 News
+- *2026.05*: &nbsp;📖📖 I am back in Suwon, South Korea, for another visit to Sungkyunkwan University. Many thanks to [Prof. Dong In Kim](https://scholar.google.com/citations?user=v2chr7kAAAAJ&hl=en).
 - *2026.03*: &nbsp;🎉🎉Two first-author papers have been accepted by the IEEE Communications Magazine.
 - *2026.02*: &nbsp;🎉🎉One first-author paper has been accepted by the IEEE Journal on Selected Areas in Communications.
 - *2026.01*: &nbsp;🎉🎉One first-author paper has been accepted by the IEEE Transactions on Cognitive Communications and Networking. Thanks Prof. Dusit and Prof. Kim!
