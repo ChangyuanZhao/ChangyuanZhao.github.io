@@ -125,3 +125,15 @@ cities:
     visits:
       - 2026-04-12
 
+  - city: Glasgow
+    lat: 55.8642
+    lon: -4.2518
+    visits:
+      - 2026-05-22
+
+  - city: Belfast
+    lat: 54.5973
+    lon: -5.9301
+    visits:
+      - 2026-05-24
+
