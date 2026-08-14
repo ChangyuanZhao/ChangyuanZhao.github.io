@@ -32,6 +32,9 @@ min_content_height_4k: 1200px # 4K显示器
 
 ## 🎖 Honors and Awards
 
+- *2026.08* Best Paper Award in the *2026 IEEE/CIC International Conference on Communications in China (ICCC)* on Aug. 7-9, 2026, Wuhan, China
+![BP_CAICE_2026](./images/BP/IEEEICCC.jpg)
+
 - *2026.02* Best Paper Award in the *12th EAI International Conference on Industrial Networks and Intelligent Systems (EAI INISCOM 2026)* on Feb. 26-27, 2026, Da Nang City, Vietnam
 ![BP_CAICE_2026](./images/BP/ICINIS.png)
 
