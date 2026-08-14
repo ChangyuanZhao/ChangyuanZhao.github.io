@@ -136,4 +136,10 @@ cities:
     lon: -5.9301
     visits:
       - 2026-05-24
+      
+  - city: Wuhan
+    lat: 30.5928
+    lon: 114.3055
+    visits:
+      - 2026-08-06
 
