@@ -81,9 +81,12 @@ For more information, please visit our research group at NTU.
 
 
 
-# 🌍 Maps
+<div id="maps-section">
 
-<div class="map-row">
+<button id="toggle-maps" class="map-toggle" type="button"
+        aria-expanded="false" aria-controls="maps-panel">🌍 Show maps ▾</button>
+
+<div class="map-row" id="maps-panel" hidden>
   <!-- Travel Map -->
   <div class="map-box">
     <h3>✈️ Travel Map</h3>
@@ -96,26 +99,46 @@ For more information, please visit our research group at NTU.
   <!-- Visitor Map -->
   <div class="map-box">
     <h3>📈 Visitors</h3>
-    <div class="visitor-map-wrapper">
-      <script
-        type="text/javascript"
-        id="mapmyvisitors"
-        src="//mapmyvisitors.com/map.js?d=EuV_MRhvUarWDlcMSSMFIhxd9n0ESY-v1UXCtSgomf0&cl=d62728&w=a&cl=ffffff&w=a&co=4a6fa5">
-      </script>
-    </div>
+    <div class="visitor-map-wrapper" id="visitor-map-wrapper"></div>
     <p class="map-note">
       From where I have been → to where my research reaches.
     </p>
   </div>
 </div>
 
+</div>
+
 <style>
+  .map-toggle {
+    display: inline-block;
+    padding: 7px 16px;
+    font-size: 1em;
+    font-family: inherit;
+    color: #4a6fa5;
+    background: transparent;
+    border: 1px solid #4a6fa5;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 20px 0 4px;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .map-toggle:hover,
+  .map-toggle:focus-visible {
+    background: #4a6fa5;
+    color: #fff;
+  }
+
   .map-row {
     display: flex;
     gap: 24px;
     flex-wrap: wrap;
     margin: 20px 0;
     align-items: flex-start;
+  }
+
+  .map-row[hidden] {
+    display: none;
   }
 
   .map-box {
@@ -178,6 +201,9 @@ For more information, please visit our research group at NTU.
     const mapContainer = document.getElementById('travel-map');
     if (!mapContainer) return;
 
+    // Collapsed: skip init, otherwise Leaflet measures a 0-size container
+    if (mapContainer.offsetParent === null) return;
+
     if (window.travelMap) {
       window.travelMap.invalidateSize();
       return;
@@ -235,6 +261,48 @@ For more information, please visit our research group at NTU.
     }, 300);
   }
 
+  // Load the visitor widget only on first expand, so it measures a real width
+  function initVisitorMap() {
+    const wrapper = document.getElementById('visitor-map-wrapper');
+    if (!wrapper || wrapper.dataset.loaded) return;
+    wrapper.dataset.loaded = '1';
+
+    const s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.id = 'mapmyvisitors';
+    s.src = '//mapmyvisitors.com/map.js?d=EuV_MRhvUarWDlcMSSMFIhxd9n0ESY-v1UXCtSgomf0&cl=d62728&w=a&cl=ffffff&w=a&co=4a6fa5';
+    wrapper.appendChild(s);
+  }
+
+  function bindMapToggle() {
+    const btn = document.getElementById('toggle-maps');
+    const panel = document.getElementById('maps-panel');
+    if (!btn || !panel || btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+
+    btn.addEventListener('click', function() {
+      const opening = panel.hasAttribute('hidden');
+
+      if (opening) {
+        panel.removeAttribute('hidden');
+      } else {
+        panel.setAttribute('hidden', '');
+      }
+
+      btn.setAttribute('aria-expanded', String(opening));
+      btn.textContent = opening ? '🌍 Hide maps ▴' : '🌍 Show maps ▾';
+
+      if (opening) {
+        initMap();
+        initVisitorMap();
+        setTimeout(function() {
+          if (window.travelMap) window.travelMap.invalidateSize();
+        }, 50);
+      }
+    });
+  }
+
+  bindMapToggle();
   initMap();
   window.addEventListener('load', initMap);
   window.addEventListener('DOMContentLoaded', initMap);
@@ -247,5 +315,8 @@ For more information, please visit our research group at NTU.
   });
   window.addEventListener('popstate', function() {
     setTimeout(initMap, 300);
+  });
+  window.addEventListener('hashchange', function() {
+    setTimeout(bindMapToggle, 100);
   });
 </script>
