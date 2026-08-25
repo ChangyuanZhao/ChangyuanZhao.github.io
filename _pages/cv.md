@@ -32,39 +32,52 @@ min_content_height_4k: 1200px # 4K显示器
 
 ## 🎖 Honors and Awards
 
-<!-- ===== Certificate image toggle (drop-in block) ===== -->
+<!-- ===== Per-award certificate toggle (drop-in block) ===== -->
 <style>
-  .cv-img-toggle {
+  .cv-cert-btn {
     display: inline-block;
-    margin: 0.2em 0 0.8em;
-    padding: 0.35em 0.9em;
-    font-size: 0.85em;
+    margin-left: 0.4em;
+    padding: 0.05em 0.55em;
+    font-size: 0.75em;
     font-weight: 600;
-    line-height: 1.4;
+    line-height: 1.5;
+    vertical-align: middle;
+    white-space: nowrap;
     color: #2f6f9f;
     background: #f5f8fa;
     border: 1px solid #d6e2ea;
-    border-radius: 6px;
+    border-radius: 10px;
     cursor: pointer;
     transition: background 0.15s ease;
   }
-  .cv-img-toggle:hover { background: #e8f0f6; }
+  .cv-cert-btn:hover { background: #e8f0f6; }
   .cv-cert { display: block; margin-top: 0.4em; }
   .cv-cert[hidden] { display: none; }
 </style>
 
-<button type="button" class="cv-img-toggle" id="cvImgToggle">🖼️ Show certificates ▾</button>
-
 <script>
 (function () {
-  var SHOW = '🖼️ Show certificates ▾';
-  var HIDE = '🖼️ Hide certificates ▴';
+  var SHOW = '🖼️ show';
+  var HIDE = '🖼️ hide';
 
-  function collectCerts() {
+  function makeButton(wrap) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'cv-cert-btn';
+    btn.textContent = SHOW;
+    btn.addEventListener('click', function () {
+      var open = wrap.hidden;
+      wrap.hidden = !open;
+      btn.textContent = open ? HIDE : SHOW;
+    });
+    return btn;
+  }
+
+  function initCerts() {
     var root = document.querySelector('.page__content') || document.querySelector('#main');
-    if (!root) return [];
+    if (!root) return;
+
     var imgs = root.querySelectorAll('li img');
-    var cells = [];
     for (var i = 0; i < imgs.length; i++) {
       var img = imgs[i];
       var node = img.parentNode;
@@ -72,50 +85,29 @@ min_content_height_4k: 1200px # 4K显示器
       if (!(node && node.tagName === 'A' && node.childNodes.length === 1)) node = img;
 
       var parent = node.parentNode;
+
+      // already wired up (spa.js re-runs inline scripts) -> just collapse again
       if (parent && parent.classList && parent.classList.contains('cv-cert')) {
-        cells.push(parent);
+        parent.hidden = true;
+        var prev = parent.previousElementSibling;
+        if (prev && prev.classList.contains('cv-cert-btn')) prev.textContent = SHOW;
         continue;
       }
+
       var wrap = document.createElement('span');
       wrap.className = 'cv-cert';
       wrap.hidden = true;
       parent.insertBefore(wrap, node);
       wrap.appendChild(node);
-      cells.push(wrap);
+      parent.insertBefore(makeButton(wrap), wrap);
     }
-    return cells;
   }
 
-  function apply(open) {
-    var cells = collectCerts();
-    for (var i = 0; i < cells.length; i++) cells[i].hidden = !open;
-  }
-
-  function bindToggle() {
-    var btn = document.getElementById('cvImgToggle');
-    if (!btn) return;
-
-    // collapse on every (re)entry to the page
-    apply(false);
-    btn.dataset.open = '0';
-    btn.textContent = SHOW;
-
-    if (btn.dataset.bound) return;   // spa.js re-runs inline scripts
-    btn.dataset.bound = '1';
-
-    btn.addEventListener('click', function () {
-      var open = btn.dataset.open !== '1';
-      apply(open);
-      btn.dataset.open = open ? '1' : '0';
-      btn.textContent = open ? HIDE : SHOW;
-    });
-  }
-
-  bindToggle();
-  document.addEventListener('DOMContentLoaded', bindToggle);
-  window.addEventListener('load', bindToggle);
-  window.addEventListener('hashchange', function () { setTimeout(bindToggle, 100); });
-  window.addEventListener('popstate', function () { setTimeout(bindToggle, 300); });
+  initCerts();
+  document.addEventListener('DOMContentLoaded', initCerts);
+  window.addEventListener('load', initCerts);
+  window.addEventListener('hashchange', function () { setTimeout(initCerts, 100); });
+  window.addEventListener('popstate', function () { setTimeout(initCerts, 300); });
 })();
 </script>
 
