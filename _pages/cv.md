@@ -25,15 +25,15 @@ min_content_height_4k: 1200px # 4K显示器
 
 # 📑 Research Experience
 - *Sungkyunkwan University, South Korea*  
-**Visiting Student, Mar. 2025**  
+**Visiting Student, Mar. 2025 / May. 2026**  
 ◦ Supervised by Prof. Dong In Kim
 
 
 
 ## 🎖 Honors and Awards
 
-- *2026.08* Best Paper Award in the *2026 IEEE/CIC International Conference on Communications in China (ICCC)* on Aug. 7-9, 2026, Wuhan, China
-![BP_CAICE_2026](./images/BP/IEEEICCC.jpg)
+- *2026.08* Chinese Government Award for Outstanding Self-financed Students Abroad (2025–2026), presented by the China Scholarship Council (CSC), with only 650 recipients selected worldwide each year
+![BP_CAICE_2026](./images/csc.jpg)
 
 - *2026.02* Best Paper Award in the *12th EAI International Conference on Industrial Networks and Intelligent Systems (EAI INISCOM 2026)* on Feb. 26-27, 2026, Da Nang City, Vietnam
 ![BP_CAICE_2026](./images/BP/ICINIS.png)
