@@ -63,6 +63,7 @@ For more information, please visit our research group at NTU.
 
 
 # 🔥 News
+- *2026.08*: &nbsp;🎉🎉 Honored to receive the 2025–2026 Chinese Government Award for Outstanding Self-financed Students Abroad from the China Scholarship Council (CSC). Only 650 recipients are selected worldwide each year. Many thanks to CSC for this recognition.
 - *2026.08*: &nbsp;🎉🎉One first-author paper has been accepted by npj Wireless Technology.
 - *2026.07*: &nbsp;🎉🎉One first-author paper has been accepted by the 2026 IEEE/CIC International Conference on Communications in China (ICCC).
 - *2026.05*: &nbsp;📖📖 I am back in Suwon, South Korea, for another visit to Sungkyunkwan University. Many thanks to [Prof. Dong In Kim](https://scholar.google.com/citations?user=v2chr7kAAAAJ&hl=en).
