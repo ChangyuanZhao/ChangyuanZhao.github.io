@@ -79,6 +79,64 @@ url: 是https://raw.githubusercontent.com/ChangyuanZhao/ChangyuanZhao.github.io/
 - *2025.03*: &nbsp;📖📖 I arrive in Suwon, South Korea, and will start the visit at Sungkyunkwan University, hosted by [Prof. Dong In Kim](https://scholar.google.com/citations?user=v2chr7kAAAAJ&hl=en).
 - *2024.12*: &nbsp;🎉🎉 One first-author paper has been accepted to the 39th Annual AAAI Conference on Artificial Intelligence — see you in Philadelphia, Pennsylvania, USA, next March!
 - *2024.11*: &nbsp;🎉🎉 One first-author paper has been accepted by the IEEE Wireless Communications. Thanks Prof. Dusit and Prof. Jiawen!
+{: .news-list }
+
+<style>
+  /* 默认只显示前 13 条，想改数量就改这里的 14 = 13+1 */
+  .news-list > li:nth-child(n+14) { display: none; }
+  .news-list.news-expanded > li:nth-child(n+14) { display: list-item; }
+
+  .news-toggle {
+    display: inline-block;
+    padding: 5px 14px;
+    font-size: 0.95em;
+    font-family: inherit;
+    color: #4a6fa5;
+    background: transparent;
+    border: 1px solid #4a6fa5;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 6px 0 12px;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .news-toggle:hover,
+  .news-toggle:focus-visible { background: #4a6fa5; color: #fff; }
+</style>
+
+<script>
+(function () {
+  function initNewsToggle() {
+    const list = document.querySelector('.news-list');
+    if (!list || list.dataset.bound) return;
+    list.dataset.bound = '1';
+
+    const hidden = Array.from(list.children).filter(
+      li => getComputedStyle(li).display === 'none'
+    ).length;
+    if (hidden === 0) return;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'news-toggle';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.textContent = '▾ Show ' + hidden + ' more news';
+    list.insertAdjacentElement('afterend', btn);
+
+    btn.addEventListener('click', function () {
+      const opening = !list.classList.contains('news-expanded');
+      list.classList.toggle('news-expanded', opening);
+      btn.setAttribute('aria-expanded', String(opening));
+      btn.textContent = opening ? '▴ Show less' : '▾ Show ' + hidden + ' more news';
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNewsToggle);
+  } else {
+    initNewsToggle();
+  }
+})();
+</script>
 
 
 
