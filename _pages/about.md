@@ -35,7 +35,7 @@ Prior to that, I received my B.Sc. degree from the University of Science and Tec
 
 My research focuses on Generative AI (GenAI) and Large Language Models (LLMs) for wireless communications and intelligent networking. In particular, I am interested in how next-generation networks can support GenAI and LLM services, and how GenAI and LLMs can enhance the performance, security, and reliability of future communication systems.
 
-I have published several papers in these areas. Please see my <a href='https://scholar.google.com/citations?user=FI6q53MAAAAJ'>Google Scholar</a> profile for more details and citation statistics.
+I have published several papers with total <a href='https://scholar.google.com/citations?user=FI6q53MAAAAJ'>google scholar </a> <a href='https://scholar.google.com/citations?user=FI6q53MAAAAJ'><img src="https://badgen.net/https/{{ url | remove: 'https://' }}"></a>. Please see my <a href='https://scholar.google.com/citations?user=FI6q53MAAAAJ'>Google Scholar</a> profile for more details.
 
 <!--"https://badgen.net/http/{{ url | remove: 'https://' }}"-->
 
