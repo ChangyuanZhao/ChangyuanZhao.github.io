@@ -111,6 +111,10 @@ min_content_height_4k: 1200px # 4K显示器
 })();
 </script>
 
+
+- *2026.08* Outstanding Paper Award in the *20th International Symposium on Wireless Communication Systems (ISWCS 2026)* on Aug. 24–26, 2026, Gold Coast, Australia.
+![BP_CAICE_2026](./images/ISWCS_2026.pdf)
+
 - *2026.08* Chinese Government Award for Outstanding Self-financed Students Abroad (2025–2026), presented by the China Scholarship Council (CSC), with only 650 recipients selected worldwide each year
 ![BP_CAICE_2026](./images/csc.jpg)
 
