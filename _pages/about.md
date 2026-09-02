@@ -29,13 +29,13 @@ redirect_from:
 
 # 👋 About Me {#about-me}
 
-Hi! I am currently a PhD candidate at the College of Computing and Data Science, Nanyang Technological University (NTU), Singapore, supervised by [Prof. Dusit Niyato](https://personal.ntu.edu.sg/dniyato/) (IEEE Fellow).
+Hi! I recently completed my Ph.D. study at the College of Computing and Data Science, Nanyang Technological University (NTU), Singapore. During my doctoral studies, I was advised by [Prof. Dusit Niyato](https://personal.ntu.edu.sg/dniyato/) (IEEE Fellow).
 
-Prior to this, I obtained a B.Sc. degree at the University of Science and Technology of China, China, and an M.Eng. degree at the University of Chinese Academy of Sciences, Institute of Software, China, under the guidance of [Prof. Bai Xue](https://lcs.ios.ac.cn/~xuebai/).
+Prior to that, I received my B.Sc. degree from the University of Science and Technology of China, China, and my M.Eng. degree from the University of Chinese Academy of Sciences, Institute of Software, China, where I was advised by [Prof. Bai Xue](https://lcs.ios.ac.cn/~xuebai/).
 
-My research is primarily centered around the utilization of Generative AI (GenAI) and Large Language Models (LLMs) in wireless communications and intelligent networking. 
+My research focuses on Generative AI (GenAI) and Large Language Models (LLMs) for wireless communications and intelligent networking. In particular, I am interested in how next-generation networks can support GenAI and LLM services, and how GenAI and LLMs can enhance the performance, security, and reliability of future communication systems.
 
-Our primary objective is to investigate how intelligent networks can support a wide range of GenAI and LLM models, and "how GenAI and LLM models can enhance the performance, security, and reliability of next-generation communication systems. I have published several papers with total <a href='https://scholar.google.com/citations?user=FI6q53MAAAAJ'>google scholar </a> <a href='https://scholar.google.com/citations?user=FI6q53MAAAAJ'><img src="https://badgen.net/https/{{ url | remove: 'https://' }}"></a>. 
+I have published several papers in these areas. Please see my <a href='https://scholar.google.com/citations?user=FI6q53MAAAAJ'>Google Scholar</a> profile for more details and citation statistics.
 
 <!--"https://badgen.net/http/{{ url | remove: 'https://' }}"-->
 
@@ -63,6 +63,7 @@ For more information, please visit our research group at NTU.
 
 
 # 🔥 News
+- *2026.08*: &nbsp;🎓🎉 Successfully completed my Ph.D. oral defense at NTU. Grateful to everyone who supported me throughout this journey.
 - *2026.08*: &nbsp;🎉🎉 Honored to receive the 2025–2026 Chinese Government Award for Outstanding Self-financed Students Abroad from the China Scholarship Council (CSC). Only 650 recipients are selected worldwide each year. Many thanks to CSC for this recognition.
 - *2026.08*: &nbsp;🎉🎉One first-author paper has been accepted by npj Wireless Technology.
 - *2026.07*: &nbsp;🎉🎉One first-author paper has been accepted by the 2026 IEEE/CIC International Conference on Communications in China (ICCC).
