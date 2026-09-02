@@ -52,7 +52,6 @@ url: 是https://raw.githubusercontent.com/ChangyuanZhao/ChangyuanZhao.github.io/
 -->
 
 
-For more information, please visit our research group at NTU.
 
 <!-- <div class="position-alert">
   🔎 I am currently seeking academic positions in wireless communications and AI.
