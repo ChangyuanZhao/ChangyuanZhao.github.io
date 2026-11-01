@@ -62,6 +62,7 @@ url: 是https://raw.githubusercontent.com/ChangyuanZhao/ChangyuanZhao.github.io/
 
 
 # 🔥 News
+- *2026.11*: &nbsp;🎉🎉One first-author paper has been accepted by the IEEE Transactions on Mobile Computing.
 - *2026.08*: &nbsp;🎓🎉 Successfully completed my Ph.D. oral defense at NTU. Grateful to everyone who supported me throughout this journey.
 - *2026.08*: &nbsp;🎉🎉 Honored to receive the 2025–2026 Chinese Government Award for Outstanding Self-financed Students Abroad from the China Scholarship Council (CSC). Only 650 recipients are selected worldwide each year. Many thanks to CSC for this recognition.
 - *2026.08*: &nbsp;🎉🎉One first-author paper has been accepted by npj Wireless Technology.
