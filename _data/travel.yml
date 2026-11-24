@@ -19,6 +19,7 @@ cities:
     lon: 114.0579
     visits:
       - 2025-07-23
+      - 2026-11-17
 
   - city: Dalian
     lat: 38.9140
